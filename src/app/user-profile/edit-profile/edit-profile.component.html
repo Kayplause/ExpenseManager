@@ -1,0 +1,81 @@
+<div class="container">
+  <div class="row">
+    <div class="col-md-12">
+      <h4 class="text-success">
+        <b>EDIT PROFILE</b>
+      </h4>
+      <hr>
+      <br>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-7">
+      <!-- response area -->
+      <div *ngIf="responseAlert" class="alert" [class.alert-danger]="!requestPass" [class.alert-success]="requestPass" role="alert">
+        {{responseMessage}}
+      </div>
+      <!-- user input area -->
+      <div>
+        <!-- response area -->
+        <div *ngIf="responseAlert" class="alert" [class.alert-danger]="!requestPass" [class.alert-success]="requestPass" role="alert">
+          {{responseMessage}}
+        </div>
+        <!-- user input area -->
+        <form role="form" #EditProfile="ngForm" (ngSubmit)="onEditProfile(EditProfile)">
+          <div class="form-group">
+            <label for="fullname">Full name</label>
+            <input type="text" id="editFullname" class="form-control" name="FullName"
+                    placeholder="e.g Victor Jay Joseph" [ngModel]="generalService.activeUser.Fullname"
+                    #editFullname="ngModel" [disabled]="working" required
+                    pattern="^[a-zA-Z]+\s+[a-zA-Z]+$|^[a-zA-Z]+\s+[a-zA-Z]+\s+[a-zA-Z]+$">
+            <div *ngIf="editFullname?.errors && editFullname?.touched">
+              <div *ngIf="editFullname.errors.required" class="text-danger">
+                Please enter full name
+              </div>
+              <div *ngIf="editFullname.errors.pattern" class="text-danger">
+                Please enter a valid full name
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="username">Username</label>
+            <input type="text" id="editUsername" class="form-control" name="Username"
+                    placeholder="e.g vickJo" [ngModel]="generalService.activeUser.Username"
+                    #editUsername="ngModel" [disabled]="working" required disabled>
+            <div *ngIf="editUsername?.errors && editUsername?.touched">
+              <div *ngIf="editUsername.errors.required" class="text-danger">
+                Please enter Username
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="usermail">Email</label>
+            <input type="text" id="editUsermail" class="form-control" name="Email"
+                    placeholder="e.g vickjo@mail.com" [ngModel]="generalService.activeUser.Email"
+                    #editUsermail="ngModel" [disabled]="working" required
+                    pattern="^([\w-\.]+@([\w-]+\.)+[\w-]{2,4})?$">
+            <div *ngIf="editUsermail?.errors && editUsermail?.touched">
+              <div *ngIf="editUsermail.errors.required" class="text-danger">
+                Please enter email address
+              </div>
+              <div *ngIf="editUsermail.errors.pattern" class="text-danger">
+                Please enter a valid email address
+              </div>
+            </div>
+          </div>
+
+          <button [@flipInOut]="stateA" type="submit" class="btn btn-dark float-right" [disabled]="EditProfile.form.invalid">
+            <i class="fas fa-save"></i> Update
+          </button>
+          <button [@flipInOut]="stateB" type="button" class="btn btn-secondary float-right" disabled>
+            <i class="fas fa-spinner fa-pulse"></i> Please wait
+          </button>
+          <br>
+          <br>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

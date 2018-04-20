@@ -1,0 +1,47 @@
+<!-- CHART -->
+<div class="row">
+  <!-- BAR OR LINE CHART -->
+  <div class="col-lg-6">
+    <div class="d-block">
+      <canvas baseChart width="400px" height="300px"
+        [datasets]="chartDataOne"
+        [chartType]="chartTypeOne"
+        [labels]="chartLabels"
+        [legend]="chartLegend"
+        [options]="chartOptionsOne"
+        (chartClick)="chartClicked($event)"
+        (chartHover)="chartHovered($event)">
+      </canvas>
+    </div>
+  </div>
+
+  <!-- PIE OR DOUGHNUT CHART -->
+  <div class="col-lg-6">
+    <div class="d-block">
+      <canvas baseChart width="400px" height="300px"
+        [data]="chartDataTwo"
+        [chartType]="chartTypeTwo"
+        [labels]="chartLabels"
+        [options]="chartOptionsTwo"
+        (chartClick)="chartClicked($event)"
+        (chartHover)="chartHovered($event)">
+      </canvas>
+    </div>
+  </div>
+</div>
+
+<div class="my-4"></div>
+
+<!-- TOGGLE CHART TYPE -->
+<div class="row">
+  <div class="col">
+    <div class="btn-group" role="group">
+      <button type="button" class="btn btn-outline-dark">
+        <i class="fas fa-hand-point-right"></i>
+      </button>
+      <button type="button" class="btn btn-dark" (click)="toggleChart()">
+        Toggle Chart
+      </button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,41 @@
+<div class="container-fluid">
+  <div class="row">
+    <div *ngIf="generalService.sessionExpired" class="app-alert alert alert-danger" role="alert">
+      <b>Your current session has expired. Please re-login</b>
+      <span class="modally float-right" data-dismiss="alert" (click)="dismissTimeoutAlert()">
+        <i class="fas fa-times"></i>
+      </span>
+    </div>
+    <!--
+      *************************************************************************
+          display without navigation menu.....applicable page e.g: login
+      *************************************************************************
+     -->
+     <div *ngIf="generalService.currentUrl === undefined || generalService.isLoggedIn === false">
+       <router-outlet></router-outlet>
+     </div>
+
+    <!--
+      *************************************************************************
+                      display with toggable navigation menu
+      *************************************************************************
+     -->
+     <div *ngIf="generalService.currentUrl !== undefined && generalService.isLoggedIn === true">
+        <!-- title bar area of the application -->
+          <app-title-bar></app-title-bar>
+
+        <!-- navigation side-left-menu of the application -->
+        <div class="app-menu" [@menuBarDP]="generalService.navMenuBarDisplay">
+          <app-sidebar-left></app-sidebar-left>
+        </div>
+
+        <!-- content display area of the application -->
+        <div class="app-content" [class.full-width]="!generalService.showMenu"
+             [@contentDP]="generalService.contentViewDisplay"
+             (click)="smallScreenDp()">
+          <router-outlet></router-outlet>
+        </div>
+     </div>
+
+  </div>
+</div>

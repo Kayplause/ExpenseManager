@@ -1,0 +1,41 @@
+<div class="app-title-bar">
+
+  <!-- menu-bar hide/show control -->
+  <div class="fa-3x menu-control">
+    <span *ngIf="generalService.showMenu" (click)="navigationMenu()" class="fa-layers fa-fw">
+      <i class="fas fa-circle"></i>
+      <i class="fas fa-times" data-fa-transform="shrink-7"></i>
+    </span>
+    <span *ngIf="!generalService.showMenu" (click)="navigationMenu()" class="fa-layers fa-fw">
+      <i class="fas fa-circle"></i>
+      <i class="fas fa-bars" data-fa-transform="shrink-7"></i>
+    </span>
+  </div>
+
+  <!-- logo -->
+  <img src="assets/images/logo.png" alt="xplug_logo" class="img-fluid" />
+
+  <!-- User Profile Settings -->
+  <div class="float-right btn-group current-user" role="group">
+    <button type="button" class="btn btn-outline-secondary">
+      <i class="fas fa-user-circle"></i>
+      Welcome {{generalService.activeUser.Username}}
+    </button>
+    <div class="btn-group" role="group">
+      <button id="userGrp" type="button" class="btn btn-secondary dropdown-toggle"
+              data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+      </button>
+      <div class="dropdown-menu user-menu" aria-labelledby="userGrp">
+        <a routerLink="/user/edit-profile" routerLinkActive="active-menu"
+            (click)="generalService.parentMenu='userTab'">
+          <i class="fas fa-user-plus"></i> Edit Profile</a>
+        <a routerLink="/user/change-password" routerLinkActive="active-menu"
+            (click)="generalService.parentMenu='userTab'">
+          <i class="fas fa-exchange-alt"></i> Change Password</a>
+        <a (click)="generalService.logout()">
+          <i class="fas fa-sign-out-alt"></i> Sign Out</a>
+      </div>
+    </div>
+  </div>
+
+</div>

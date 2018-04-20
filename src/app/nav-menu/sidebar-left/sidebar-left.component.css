@@ -1,0 +1,45 @@
+ul {
+  font-family: 'Tenor Sans', sans-serif;
+  font-size: 0.95em;
+  list-style-type: none;
+  padding: 0;
+}
+li {
+  color: #fff;
+}
+a {
+  text-decoration: none;
+  color: #fff;
+  display: block;
+  width: 100%;
+  cursor: pointer;
+  padding: 0.5rem;
+}
+a:hover {
+  background: #1e282b;
+  color: #fff;
+  -moz-transition: all ease-in-out 0.4s;
+  -webkit-transition: all ease-in-out 0.4s;
+  -o-transition: all ease-in-out 0.4s;
+  transition: all ease-in-out 0.4s;
+}
+.child-tab {
+  margin-left: 25px;
+  display: none;
+}
+.active-parent {
+  color: #73BE23;
+}
+.active-child {
+  color: #EF4C23;
+}
+.current-user-link {
+  background: #E6E7E8!important;
+  color: #000!important;
+}
+
+@media(min-width: 577px) {
+  .current-user {
+    display: none;
+  }
+}

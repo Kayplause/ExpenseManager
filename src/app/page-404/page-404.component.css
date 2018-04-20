@@ -1,0 +1,17 @@
+.bg {
+  position: fixed;
+  height: 100%;
+  width: 100%;
+  overflow: auto;
+  padding-bottom: 10em;
+}
+.bg::-webkit-scrollbar {
+  background: #e6e7e8;
+  width: 10px;
+}
+.bg::-webkit-scrollbar-thumb {
+  background: #aaa;
+}
+.container {
+  margin-top: 5em;
+}

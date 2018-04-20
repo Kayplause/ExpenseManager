@@ -1,0 +1,742 @@
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <h4 class="text-success">
+                <b>Expense Item</b>
+            </h4>
+            <hr>
+                <br></div>
+            </div>
+
+            <div class="row mb-2">
+                <div class="col-md-8">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="Expense">Expense Category</label>
+                                <select
+                                    class="form-control"
+                                    name="Expense"
+                                
+                                    (change)="ExpenseCategory(Expense.value)"
+                                    id="Expense"
+                                    #Expense="ngModel"
+                                    required 
+                                    ngModel
+                                    >
+                                    <option value="">-- Select Expense Category--</option>
+                                    <option *ngFor="let expenseCat of expensecategories" [value]='expenseCat.ExpenseCategoryId'>{{expenseCat.ExpenseCategoryName}}</option>
+                                </select>
+                                <div
+                                    class="text-danger"
+                                    *ngIf="Expense.invalid && (Expense.touched || Expense.dirty)">
+                                    <div *ngIf="Expense?.errors.required">
+                                        Please Select Expense
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-5">
+                            <div *ngIf="btnShow" class="form-group ">
+                                <label for="ExpenseType">Expense Type</label>
+                                <select
+                                    class="form-control"
+                                    name="ExpenseType"                                    
+                                    (change)="changeExpenseType(ExpenseType.value)"
+                                    id="ExpenseType"
+                                    #ExpenseType="ngModel"
+                                    required
+                                    ngModel >
+                                    <option value="">-- Select ExpenseType --</option>
+                                    <option *ngFor="let expType of expenses" [value]='expType.ExpenseTypeId'>{{expType.Name}}</option>
+                                </select>
+                                <div
+                                    class="text-danger"
+                                    *ngIf="ExpenseType.invalid && (ExpenseType.touched || ExpenseType.dirty)">
+                                    <div *ngIf="ExpenseType.errors.required">
+                                        Please Select ExpenseType
+                                    </div>
+                                </div>
+                            </div>
+                        </div>  
+                    </div>
+                </div>  
+                        <div *ngIf="btnShow" class="col-md-4 mt-4">
+                            <button 
+                                class="btn btn-success mb-2 float-right"
+                                (click)="triggerAdd()"
+                                data-toggle="modal"
+                                data-target="#addExpenseItemModal">
+                                <i class="fa fa-pencil-alt"></i>
+                                Add Expense Item </button>
+                        </div>                              
+                  </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover table-bordered">
+                        <thead>
+                            <tr class="bg-info">
+                                <th>S/N</th>
+                                <th>Name  </th>
+                                <th>Code</th>
+                                <th>Expense Category</th>
+                                <th>Expense Type</th>
+                                <th>Account Head</th>
+                                <th>Description</th> 
+                                <th>UnitPrice</th>                              
+                                <th>Status</th>
+                                <th>Action</th>                              
+                            </tr>
+                        </thead>
+                        <tbody *ngIf="!loading">
+                            <tr
+                                *ngFor="let expenseitem of filteredExpenseItems
+          | paginate: {itemsPerPage:itemsCount.value, currentPage: page};
+          index as k">
+                                <td>{{ k + 1}}</td>
+                                <td>{{expenseitem.Name}}</td>
+                                <td>{{expenseitem.Code}}</td>
+                                <td>{{expenseitem.ExpenseCategoryName}}</td>
+                                <td>{{expenseitem.ExpenseTypeName}}</td>
+                                <td>{{expenseitem.AccountHeadName}}</td>
+                                <td>{{expenseitem.Description}}</td>
+                                <td>{{expenseitem.UnitPrice}}</td>
+                                <td>{{expenseitem.StatusLabel}}</td>
+                                <td>
+                                    <span
+                                        class="text-primary pointy"
+                                        (click)="triggerEdit(expenseitem.ExpenseItemId)"
+                                        data-target="#editExpenseItemModal"
+                                        data-toggle="modal">
+                                        <b>
+                                            <i class="fa fa-edit"></i>
+                                        </b>
+                                    </span>
+                                    <span
+                                        class="text-danger pointy"
+                                        (click)="triggerDelete(expenseitem.ExpenseItemId, expenseitem.Name)"
+                                        data-target="#deleteExpenseItemModal"
+                                        data-toggle="modal">
+                                        <b>
+                                            <i class="fa fa-trash-alt"></i>
+                                          </b>
+                                    </span>
+                                    <span *ngIf="showAction()"
+                                    class="text-warning pointy"
+                                    (click)="triggerApprove(expenseitem.ExpenseItemId, expenseitem.Name)"
+                                    data-target="#approveExpenseItemModal"
+                                    data-toggle="modal">
+                                    <b>
+                                        <i class="fas fa-thumbs-up"></i>
+                                        Approve</b>
+                                </span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <span *ngIf="loading" class="text-info">
+                        <i class="fas fa-spinner fa-pulse fa-3x"></i>
+                    </span>
+                </div>
+          <!--  </div>  -->
+
+            <!-- Pagination Controls -->
+            <div class="row">
+                <div class="col-sm-4">
+                    <form role="form" class="paging-form">
+                        <div class="form-group">
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <div class="input-group-text">
+                                        Count/List
+                                    </div>
+                                </div>
+                                <select
+                                    class="form-control"
+                                    #itemsCount="ngModel"
+                                    name="count"
+                                    [(ngModel)]="paginator.num">
+                                    <option value="null" disabled="disabled">--Select count--</option>
+                                    <option *ngFor="let num of [1, 5, 10, 20, 50]" [value]="num">{{num}}</option>
+                                </select>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="col-sm-8">
+                    <pagination-controls (pageChange)="page = $event"></pagination-controls>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Modal -->
+        <div
+            class="modal fade"
+            id="addExpenseItemModal"
+            tabindex="-1"
+            role="dialog"
+            aria-labelledby="addExpenseItemModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header bg-success text-white">
+                        <h4 class="modal-Fullname" id="addExpenseItemModalLabel">
+                            Expense Item
+                        </h4>
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                            &times;
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div>
+                            <!-- response area -->
+                            <div
+                                *ngIf="responseAlert"
+                                class="alert text-center"
+                                [class.alert-danger]="!requestPass"
+                                [class.alert-success]="requestPass"
+                                role="Expense">
+                                {{responseMessage}}
+                            </div>
+
+                            <form role="form" #item="ngForm" (ngSubmit)="onAddExpenseItem(item)">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="Name">Name:</label>
+                                            <input
+                                                type="text"
+                                                id="Name"
+                                                class="form-control"
+                                                name="Name"
+                                                placeholder="e.g Name"
+                                                [(ngModel)]="expenseItemObj.Name"
+                                                #Name="ngModel"
+                                                required
+                                                ngModel
+                                                minlength="3"
+                                                maxlength="50">
+                                                <div class="text-danger" *ngIf="Name.invalid && (Name.touched || Name.dirty)">
+                                                    <div *ngIf="Name?.errors.required">
+                                                        Name field is required
+                                                    </div>
+                                                    <div *ngIf="Name?.errors.minlength">
+                                                        Name should be
+                                                        {{Name?.errors.minlength.requiredLength}}
+                                                        characters minimum
+                                                    </div>
+                                                   
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="Code">
+                                                    Code
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    id="Code"
+                                                    class="form-control"
+                                                    name="Code"
+                                                    placeholder="e.g Code"
+                                                    [(ngModel)]="expenseItemObj.Code"
+                                                    #Code="ngModel"
+                                                    required
+                                                    ngModel
+                                                    minlength="3"
+                                                    maxlength="11">
+                                                    <div class="text-danger" *ngIf="Code.invalid && Code.touched">
+                                                        <div *ngIf="Code?.errors.required">
+                                                            Code field is required
+                                                        </div>
+                                                        <div *ngIf="Code?.errors.minlength">
+                                                            Code should be
+                                                            {{Code?.errors.minlength.requiredLength}}
+                                                            characters minimum
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label for="UnitPrice">Unit Price:</label>
+                                                    <input
+                                                        type="text"
+                                                        id="UnitPrice"
+                                                        class="form-control"
+                                                        name="UnitPrice"
+                                                        placeholder="e.g UnitPrice"
+                                                        [(ngModel)]="expenseItemObj.UnitPrice"
+                                                        #UnitPrice="ngModel"
+                                                        required
+                                                        ngModel
+                                                        minlength="1"
+                                                        maxlength="10">
+                                                        <div
+                                                            class="text-danger"
+                                                            *ngIf="UnitPrice.invalid && (UnitPrice.touched || UnitPrice.dirty)">
+                                                            <div *ngIf="UnitPrice?.errors.required">
+                                                                UnitPrice field is required
+                                                            </div>
+                                                            <div *ngIf="UnitPrice?.errors.minlength">
+                                                                UnitPrice should be
+                                                                {{UnitPrice?.errors.minlength.requiredLength}}
+                                                                characters minimum
+                                                            </div>
+
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label for="Description">
+                                                            Description
+                                                        </label>
+                                                        <textarea
+                                                            type="text"
+                                                            id="Description"
+                                                            class="form-control"
+                                                            row="4"
+                                                            name="Description"
+                                                            placeholder="e.g Description"
+                                                            [(ngModel)]="expenseItemObj.Description"
+                                                            #Description="ngModel"
+                                                            required
+                                                            ngModel
+                                                            minlength="10"
+                                                            maxlength="100"></textarea>
+                                                        <div class="text-danger" *ngIf="Description.invalid && Description.touched">
+                                                            <div *ngIf="Description?.errors.required">
+                                                                Description field is required
+                                                            </div>
+                                                            <div *ngIf="Mobile?.errors.minlength">
+                                                                Description should be
+                                                                {{Description?.errors.minlength.requiredLength}}
+                                                                characters minimum
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                           
+                                                <div class="col-md-6 mt-3">
+                                                    <div class="form-group">
+                                                        <label for="Account">Account Head</label>
+                                                        <select
+                                                            class="form-control"
+                                                            name="Account"
+                                                            id="Account"
+                                                            #Account="ngModel"
+                                                            required
+                                                            ngModel>
+                                                            <option value=''>--Select Account Head--</option>
+                                                            <option *ngFor="let account of accounts" [value]='account.AccountHeadId'>{{account.Title}}</option>
+                                                        </select>
+                                                        <div
+                                                            class="text-danger"
+                                                            *ngIf="Account.invalid && (Account.touched || Account.dirty)">
+                                                            <div *ngIf="Account?.errors.required">
+                                                                Please Select Account
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                          
+                                            </div>
+                                         
+                                            <div class="form-check">
+                                                <label for="Status" class="form-check-label h6 pointy">
+                                                    <input
+                                                        type="checkbox"
+                                                        name="Status"
+                                                        class=" form-check-input"
+                                                        id="Status"
+                                                        #Status='ngModel'
+                                                        [(ngModel)]='expenseItemObj.Status'>
+                                                        Status:
+                                                    </label>
+                                                </div>
+
+                                                <button
+                                                    [@flipInOut]="stateA"
+                                                    type="submit"
+                                                    class="btn btn-primary float-right pointy"
+                                                    [disabled]="item.form.invalid">
+                                                    <i class="fas fa-save"></i>
+                                                    Submit
+                                                </button>
+                                                <button
+                                                    [@flipInOut]="stateB"
+                                                    type="button"
+                                                    class="btn btn-secondary float-right"
+                                                    disabled="disabled">
+                                                    <i class="fas fa-spinner fa-pulse"></i>
+                                                    Please wait
+                                                </button>
+                                                <br>
+                                                    <br></form>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-default" data-dismiss="modal">
+                                                    Close
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+ <!-- Edit Modal -->
+<div class="modal fade" id="editExpenseItemModal" tabindex="-1" role="dialog" aria-labelledby="editExpenseItemModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+          <h4 class="modal-Fullname" id="editExpenseItemModalLabel">
+            Edit ExpenseItem
+          </h4>
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+            &times;
+          </button>
+        </div>
+        <div class="modal-body">
+          <div>
+            <!-- response area -->
+            <div *ngIf="responseAlert" class="alert" [class.alert-danger]="!requestPass" [class.alert-success]="requestPass" role="alert">
+              {{responseMessage}}
+            </div>
+            <!-- user input area -->
+            <form role="form" #editExpenseItem="ngForm" (ngSubmit)="onEditExpenseItem(editExpenseItem)">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="Name">Name:</label>
+                            <input
+                                type="text"
+                                id="Name"
+                                class="form-control"
+                                name="Name"
+                                placeholder="e.g Name"
+                                [(ngModel)]="editExpenseItemObj.Name"
+                                #Name="ngModel"
+                                required
+                                minlength="3"
+                                maxlength="50">
+                                <div class="text-danger" *ngIf="Name.invalid && (Name.touched || Name.dirty)">
+                                    <div *ngIf="Name?.errors.required">
+                                        Name field is required
+                                    </div>
+                                    <div *ngIf="Name?.errors.minlength">
+                                        Name should be
+                                        {{Name?.errors.minlength.requiredLength}}
+                                        characters minimum
+                                    </div>
+                                   
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="Code">
+                                    Code
+                                </label>
+                                <input
+                                    type="text"
+                                    id="Code"
+                                    class="form-control"
+                                    name="Code"
+                                    placeholder="e.g Code"
+                                    [(ngModel)]="editExpenseItemObj.Code"
+                                    #Code="ngModel"
+                                    required
+                                    minlength="3"
+                                    maxlength="11">
+                                    <div class="text-danger" *ngIf="Code.invalid && Code.touched">
+                                        <div *ngIf="Code?.errors.required">
+                                            Code field is required
+                                        </div>
+                                        <div *ngIf="Code?.errors.minlength">
+                                            Code should be
+                                            {{Code?.errors.minlength.requiredLength}}
+                                            characters minimum
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="UnitPrice">Unit Price:</label>
+                                    <input
+                                        type="text"
+                                        id="UnitPrice"
+                                        class="form-control"
+                                        name="UnitPrice"
+                                        placeholder="e.g UnitPrice"
+                                        [(ngModel)]="editExpenseItemObj.UnitPrice"
+                                        #UnitPrice="ngModel"
+                                        required
+                                        minlength="1"
+                                        maxlength="10">
+                                        <div
+                                            class="text-danger"
+                                            *ngIf="UnitPrice.invalid && (UnitPrice.touched || UnitPrice.dirty)">
+                                            <div *ngIf="UnitPrice?.errors.required">
+                                                UnitPrice field is required
+                                            </div>
+                                            <div *ngIf="UnitPrice?.errors.minlength">
+                                                UnitPrice should be
+                                                {{UnitPrice?.errors.minlength.requiredLength}}
+                                                characters minimum
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="Description">
+                                            Description
+                                        </label>
+                                        <textarea
+                                            type="text"
+                                            id="Description"
+                                            class="form-control"
+                                            row="4"
+                                            name="Description"
+                                            placeholder="e.g Description"
+                                            [(ngModel)]="editExpenseItemObj.Description"
+                                            #Description="ngModel"
+                                            required
+                                            minlength="10"
+                                            maxlength="100"></textarea>
+                                        <div class="text-danger" *ngIf="Description.invalid && Description.touched">
+                                            <div *ngIf="Description?.errors.required">
+                                                Description field is required
+                                            </div>
+                                            <div *ngIf="Mobile?.errors.minlength">
+                                                Description should be
+                                                {{Description?.errors.minlength.requiredLength}}
+                                                characters minimum
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                           
+                                <div class="col-md-6 mt-3">
+                                    <div class="form-group">
+                                        <label for="Account">Account Head</label>
+                                        <select
+                                            class="form-control"
+                                            name="Account"
+                                            id="Account"
+                                            #Account="ngModel"
+                                            [(ngModel)] ="editExpenseItemObj.AccountHeadId"
+                                            required
+                                            >
+                                            <option value=''>--Select Account Head--</option>
+                                            <option *ngFor="let account of accounts" [value]='account.AccountHeadId'>{{account.Title}}</option>
+                                        </select>
+                                        <div
+                                            class="text-danger"
+                                            *ngIf="Account.invalid && (Account.touched || Account.dirty)">
+                                            <div *ngIf="Account?.errors.required">
+                                                Please Select Account
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                          
+                            </div>
+                         
+                            <div class="form-check">
+                                <label for="Status" class="form-check-label h6 pointy">
+                                    <input
+                                        type="checkbox"
+                                        name="Status"
+                                        class=" form-check-input"
+                                        id="Status"
+                                        #Status='ngModel'
+                                        [(ngModel)]='editExpenseItemObj.Status'>
+                                        Status:
+                                    </label>
+                                </div>
+
+              <div class="d-flex justify-content-end">
+                <button [@flipInOut]="stateA" type="submit" id="update" class="btn btn-primary  mr-3 pointy" [disabled]="editExpenseItem.form.invalid">
+                  <i class="fas fa-save"></i> Update
+                </button>
+                <button [@flipInOut]="stateB" type="button" class="btn btn-outline-primary mr-3 " disabled>
+                    <i class="fas fa-spinner fa-pulse"></i> Please wait
+                  </button>
+                  <button data-dismiss="modal" type="button" class="btn btn-outline-primary">
+                      Close
+                    </button>
+              </div> 
+              <br>
+              <br>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+    
+  
+  <!-- Delete User Modal -->
+  <div class="modal fade" id="deleteExpenseItemModal" tabindex="-1" role="dialog" aria-labelledby="deleteExpenseItemModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header bg-danger text-white">
+          <h4 class="modal-Fullname" id="deleteExpenseItemModalLabel">
+            Delete
+          </h4>
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+            &times;
+          </button>
+        </div>
+        <div class="modal-body">
+          <div>
+            <!-- response area -->
+            <div *ngIf="responseAlert" class="alert" [class.alert-danger]="!requestPass" [class.alert-success]="requestPass" role="alert">
+              {{responseMessage}}
+            </div>
+            <div *ngIf="successDisplay" class="text-center">
+              <h4 class="text-secondary">
+                <b>ARE YOU SURE?</b>
+              </h4>
+              <button type="button" class="btn btn-danger pointy" (click)="onDeleteExpenseItem()">Delete</button>
+              <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+            </div>
+          </div>
+        </div>
+        <div class="mb-4"></div>
+      </div>
+    </div>
+  </div>
+  
+
+  <div class="modal fade" id="approveExpenseItemModal" tabindex="-1" role="dialog" aria-labelledby="approveExpenseItemModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+          <h4  class="modal-Fullname" id="approveExpenseItemModalLabel">
+            Item for Approval
+          </h4>
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+            &times;
+          </button>
+        </div>
+        <div class="modal-body">
+          <div>
+            <!-- response area -->
+            <div *ngIf="responseAlert" class="alert" [class.alert-danger]="!requestPass" [class.alert-success]="requestPass" role="alert">
+              {{responseMessage}}
+            </div>
+            <!-- user input area -->
+            <form role="form" #approveItem="ngForm" (ngSubmit)="onApproveExpenseItem(approveItem)">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="ApprovedItem">Approve Item:</label>
+                            <input
+                                type="text"
+                                id="ApprovedItem"
+                                class="form-control"
+                                name="ApprovedItem"
+                                placeholder="e.g ApprovedItem"
+                                [(ngModel)]="editExpenseItemObj.Name"
+                                #ApprovedItem="ngModel"
+                                required
+                                minlength="3"
+                                maxlength="50"
+                                > 
+                                <div class="text-danger" *ngIf="ApprovedItem.invalid && (ApprovedItem.touched || ApprovedItem.dirty)">
+                                    <div *ngIf="ApprovedItem?.errors.required">
+                                        ApprovedItem field is required
+                                    </div>
+                                    <div *ngIf="ApprovedItem?.errors.minlength">
+                                        ApprovedItem should be
+                                        {{ApprovedItem?.errors.minlength.requiredLength}}
+                                        characters minimum
+                                    </div>                                   
+                                </div>
+                            </div>
+                        </div>     
+                        
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="UnitPrice">Approved Unit Price:</label>
+                                <input
+                                    type="text"
+                                    id="UnitPrice"
+                                    class="form-control"
+                                    name="UnitPrice"
+                                    placeholder="e.g UnitPrice"
+                                    [(ngModel)]="approvedExpenseItemObj.UnitPrice"
+                                    #UnitPrice="ngModel"
+                                    required
+                                    minlength="1"
+                                    maxlength="10">
+                                    <div
+                                        class="text-danger"
+                                        *ngIf="UnitPrice.invalid && (UnitPrice.touched || UnitPrice.dirty)">
+                                        <div *ngIf="UnitPrice?.errors.required">
+                                            UnitPrice field is required
+                                        </div>
+                                        <div *ngIf="UnitPrice?.errors.minlength">
+                                            UnitPrice should be
+                                            {{UnitPrice?.errors.minlength.requiredLength}}
+                                            characters minimum
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                      </div>
+
+                            <div class="form-check">
+                                <label for="Status" class="form-check-label h6 pointy">
+                                    <input
+                                        type="checkbox"
+                                        name="Status"
+                                        class=" form-check-input"
+                                        id="Status"
+                                        #Status='ngModel'
+                                        [(ngModel)]='approvedExpenseItemObj.Status'>
+                                        Status:
+                                    </label>
+                                </div>
+
+              <div class="d-flex justify-content-end">
+                <button [@flipInOut]="stateA" type="submit" id="update" class="btn btn-primary  mr-3 pointy" [disabled]="approveItem.form.invalid">
+                  <i class="fas fa-save"></i> Approve
+                </button>
+                <button [@flipInOut]="stateB" type="button" class="btn btn-outline-primary mr-3 " disabled>
+                    <i class="fas fa-spinner fa-pulse"></i> Please wait
+                  </button>
+                  <button data-dismiss="modal" type="button" class="btn btn-outline-primary">
+                      Close
+                    </button>
+              </div> 
+              <br>
+              <br>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  

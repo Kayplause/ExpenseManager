@@ -1,0 +1,38 @@
+<div class="table-responsive">
+  <div class="row">
+    <div class="col-sm-4">
+      <form role="form">
+        <div class="form-group">
+          <div class="input-group">
+            <div class="input-group-prepend">
+              <div class="input-group-text">
+                Count/List
+              </div>
+            </div>
+            <select class="form-control" name="itemsNum" [(ngModel)]="itemsNum.value" #itemsPerPage
+                  (change)="setPaginationCount(itemsPerPage.value)">
+              <option value="null" disabled>--Select count--</option>
+              <option *ngFor="let num of [5, 10, 20, 50]" [value]="num">{{num}}</option>
+            </select>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="col-sm-8">
+      <nav>
+        <ul class="pagination">
+          <li class="page-item" (click)="prevPaginate()">
+            <a class="page-link">&laquo;</a>
+          </li>
+          <li *ngFor="let page of pages" class="page-item" [class.active]="currentPage === page"
+              (click)='toPage(page)'>
+            <a class="page-link">{{page}}</a>
+          </li>
+          <li class="page-item" (click)="nextPaginate()">
+            <a class="page-link">&raquo;</a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </div>
+</div>

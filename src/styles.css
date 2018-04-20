@@ -1,0 +1,76 @@
+/* You can add global styles to this file, and also import other style files */
+body {
+  font-family: 'Marmelad', sans-serif;
+}
+.pointy {
+  cursor: pointer;
+}
+body::-webkit-scrollbar {
+  background-color: #b3b3b3;
+  width: 5px;
+}
+
+body::-webkit-scrollbar-thumb {
+  background: #ddd;
+}
+
+#webTab a.nav-link {
+  text-decoration: underline;
+  font-size: 0.9rem;
+}
+
+#webTab .nav-link.active {
+  background: #73BE23;
+  text-decoration: none;
+}
+
+#webTab a.nav-link:hover,
+#webTab a.nav-link:focus,
+#webTab a.nav-link:active,
+#webTab a.nav-link:active:hover {
+  color: #73BE23;
+  text-decoration: none;
+}
+
+#webTab a.nav-link.active:hover,
+#webTab a.nav-link.active:focus,
+#webTab a.nav-link.active:active,
+#webTab a.nav-link.active:active:hover {
+  color: #fff;
+}
+
+.paging-form .form-control {
+  border-left: none !important;
+}
+
+input[type=text].ng-invalid.ng-touched {
+  border: 2px solid #d9534f;
+
+}
+input[type=text].ng-valid.ng-touched {
+  border: 2px solid #5cb85c;
+}
+
+input[type=number].ng-invalid.ng-touched {
+  border: 2px solid #d9534f;
+
+}
+input[type=number].ng-valid.ng-touched {
+  border: 2px solid #5cb85c;
+}
+
+select.ng-invalid.ng-touched {
+  border: 2px solid #d9534f;
+
+}
+select.ng-valid.ng-touched {
+  border: 2px solid #5cb85c;
+}
+
+textarea.ng-invalid.ng-touched {
+  border: 2px solid #d9534f;
+
+}
+textarea.ng-valid.ng-touched {
+  border: 2px solid #5cb85c;
+}

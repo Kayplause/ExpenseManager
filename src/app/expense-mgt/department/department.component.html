@@ -1,0 +1,251 @@
+<div class="container">
+  <div class="row">
+    <div class="col-md-12">
+      <h4 class="text-success">
+        <b> Department</b>
+      </h4>
+      <hr>
+      <br>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col">
+      <button class="btn btn-success float-right mb-2" (click)="triggerAdd()" data-toggle="modal" data-target="#addDepartmentModal">
+        <i class="fa fa-pencil-alt"></i> Add New Department</button>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-hover table-bordered">
+        <thead>
+          <tr class="bg-info">
+            <th>S/N</th>
+            <th>Name</th>            
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let dept of departments
+          | paginate: {itemsPerPage:itemsCount.value, currentPage: page};
+          index as k">
+            <td>{{ k + 1}}</td>
+            <td>{{dept.Name}}</td>
+            <td>{{dept.StatusLabel }}</td>
+            <td>
+              <span class="text-primary pointy" (click)="triggerEdit(dept.DepartmentId)" data-target="#editDepartmentModal" data-toggle="modal">
+                <b>
+                  <i class="fa fa-edit"></i> Edit</b>
+              </span>
+              <span class="text-danger pointy" (click)="triggerDelete(dept.DepartmentId, dept.Name)" data-target="#deleteDepartmentModal"
+                data-toggle="modal">
+                <b>
+                  <i class="fa fa-trash-alt"></i> Delete</b>
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <span *ngIf="loading" class="text-info">
+        <i class="fas fa-spinner fa-pulse fa-3x"></i>
+      </span>
+    </div>
+  </div>
+
+  <!-- Pagination Controls -->
+  <div class="row">
+    <div class="col-sm-4">
+      <form role="form" class="paging-form">
+        <div class="form-group">
+          <div class="input-group">
+            <div class="input-group-prepend">
+              <div class="input-group-text">
+                Count/List
+              </div>
+            </div>
+            <select class="form-control" #itemsCount="ngModel" name="count" [(ngModel)]="paginator.num">
+              <option value="null" disabled>--Select count--</option>
+              <option *ngFor="let num of [1, 5, 10, 20, 50]" [value]=num>{{num}}</option>
+            </select>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="col-sm-8">
+      <pagination-controls (pageChange)="page = $event"></pagination-controls>
+    </div>
+  </div>
+
+</div>
+
+
+<!-- Add  Modal -->
+<div class="modal fade" id="addDepartmentModal" tabindex="-1" role="dialog" aria-labelledby="addDepartmentLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-success text-white">
+        <h4 class="modal-Name" id="addDepartmentLabel">
+          Department
+        </h4>
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+          &times;
+        </button>
+      </div>
+      <div class="modal-body">
+        <div>
+          <!-- response area -->
+          <div *ngIf="responseAlert" class="alert text-center" [class.alert-danger]="!requestPass" [class.alert-success]="requestPass" role="alert">
+            {{responseMessage}}
+          </div>
+
+          <form role="form" #addDepartment="ngForm" (ngSubmit)="onAddDepartment(addDepartment)">
+            <div class="row">
+              <div class="col-md-12">
+                <div class="form-group">
+                  <label for="Name">Department Name:</label>
+                  <input type="text" id="Name" class="form-control" name="Name" placeholder="e.g HOD" [(ngModel)]="deptObj.Name"
+                    #Name="ngModel" required minlength="3" maxlength="50">
+                  <div class="text-danger" *ngIf="Name.invalid && (Name.touched || Name.dirty)">
+                    <div *ngIf="Name?.errors.required">
+                        Name Name field is required
+                    </div>
+                    <div *ngIf="Name?.errors.minlength">
+                        Name should be {{Name?.errors.minlength.requiredLength}} characters minimum
+                    </div>
+                    <!-- <div *ngIf="AlertCodeName?.errors.pattern">
+                      Only text is allowed
+                    </div> -->
+                  </div>
+                </div>
+
+                <div class="form-check">
+                  <label for="Status" class="form-check-label h6 pointy">
+                    <input type="checkbox" name="Status" class="form-check-input " id="Status" #Status='ngModel' [(ngModel)]='deptObj.Status'
+                      class=" form-check-input"> Status:
+                  </label>
+                </div>
+              </div>           
+            </div>
+
+
+            <button [@flipInOut]="stateA" type="submit" class="btn btn-primary float-right pointy" [disabled]="addDepartment.form.invalid">
+              <i class="fas fa-save"></i> Submit
+            </button>
+            <button [@flipInOut]="stateB" type="button" class="btn btn-secondary float-right" disabled>
+              <i class="fas fa-spinner fa-pulse"></i> Please wait
+            </button>
+            <br>
+            <br>
+          </form>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- Edit  Modal -->
+<div class="modal fade" id="editDepartmentModal" tabindex="-1" role="dialog" aria-labelledby="editDepartmentModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h4 class="modal-Name" id="editDepartmentModalLabel">
+        Edit  {{editdeptObj.Name}}
+        </h4>
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+          &times;
+        </button>
+      </div>
+      <div class="modal-body">
+        <div>
+          <!-- response area -->
+          <div *ngIf="responseAlert" class="alert text-center" [class.alert-danger]="!requestPass" [class.alert-success]="requestPass" role="alert">
+            {{responseMessage}}
+          </div>
+          <!-- user input area -->
+          <form role="form" #editDepartment="ngForm" (ngSubmit)="onEditDepartment(editDepartment)">
+
+              <div class="row">
+                  <div class="col-md-12">
+                    <div class="form-group">
+                      <label for="Name">Department:</label>
+                      <input type="text" id="Name" class="form-control" name="Name" placeholder="e.g Department" [(ngModel)]="editdeptObj.Name"
+                        #Name="ngModel" required minlength="3" maxlength="200">
+                      <div class="text-danger" *ngIf="Name.invalid && (Name.touched || Name.dirty)">
+                        <div *ngIf="Name?.errors.required">
+                          Provider Name field is required
+                        </div>
+                        <div *ngIf="Name?.errors.minlength">
+                          Provider Name should be {{Name?.errors.minlength.requiredLength}} characters minimum
+                        </div>
+                       
+                      </div>
+                    </div>
+               
+                    <div class="form-check">
+                      <label for="EditStatus" class="form-check-label h6 pointy">
+                        <input type="checkbox" name="Status" class="form-check-input " id="EditStatus" #Status='ngModel' [(ngModel)]='editdeptObj.Status'
+                          class=" form-check-input"> Status:
+                      </label>
+                    </div>
+                  </div>              
+                </div>
+
+
+            <button [@flipInOut]="stateA" type="submit" class="btn btn-dark float-right" [disabled]="editDepartment.form.invalid">
+              <i class="fas fa-save"></i> Update
+            </button>
+            <button [@flipInOut]="stateB" type="button" class="btn btn-secondary float-right" disabled>
+              <i class="fas fa-spinner fa-pulse"></i> Please wait
+            </button>
+            <br>
+            <br>
+          </form>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Delete  Modal -->
+<div class="modal fade" id="deleteDepartmentModal" tabindex="-1" role="dialog"
+      aria-labelledby="deleteDepartmentModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-white">
+        <h4 class="modal-Name" id="deleteDepartmentLabel">
+         Delete {{editdeptObj.Name}}
+        </h4>
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+          &times;
+        </button>
+      </div>
+      <div class="modal-body">
+        <div>
+          <!-- response area -->
+          <div *ngIf="responseAlert" class="alert text-center" [class.alert-danger]="!requestPass" [class.alert-success]="requestPass" role="alert">
+            {{responseMessage}}
+          </div>
+          <div *ngIf="successDisplay"  class="text-center">
+            <h4 class="text-secondary">
+              <b>ARE YOU SURE?</b>
+            </h4>
+              <button type="button" class="btn btn-danger" (click)="onDeleteDepartment()">Delete</button>
+              <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+          </div>
+        </div>
+      </div>
+      <div class="mb-4"></div>
+    </div>
+  </div>
+</div> 

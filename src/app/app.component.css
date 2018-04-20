@@ -1,0 +1,89 @@
+.app-menu, .app-content {
+  top: 5em;
+  padding: 20px 10px;
+}
+.app-menu::-webkit-scrollbar, .app-content::-webkit-scrollbar {
+  background-color: #b3b3b3;
+  width: 5px;
+}
+.app-menu::-webkit-scrollbar-thumb {
+  background: #000;
+}
+.app-content::-webkit-scrollbar-thumb {
+  background: #ddd;
+}
+.app-menu {
+  background: #2D3B3E;
+  position: fixed;
+  overflow: auto;
+  box-shadow: 1px 1px 5px #345;
+  height: 100%;
+  padding-bottom: 7em;
+}
+.app-content {
+  position: absolute;
+  overflow: auto;
+  height: 100%;
+  padding-bottom: 10em;
+}
+.full-width {
+  left: 0!important;
+  width: 100%!important;
+}
+.bg-opacity {
+    background: rgba(0, 0, 0, 0.5);
+}
+.app-alert {
+  position: absolute;
+  z-index: 99999;
+  width: 100%;
+}
+.modally {
+  cursor: pointer;
+}
+
+/* Responsive style */
+
+@media (min-width: 768px) {
+  .app-content {
+    background: inherit!important;
+  }
+}
+@media (min-width: 1200px) {
+  .app-menu {
+    left: 0;
+    width: 22%;
+  }
+  .app-content {
+    left: 22%;
+    width: 78%;
+  }
+}
+@media (max-width: 1199px) {
+  .app-menu {
+    left: 0;
+    width: 30%;
+  }
+  .app-content {
+    left: 30%;
+    width: 70%;
+  }
+}
+@media (max-width: 767px) {
+  .app-menu {
+    left: 0;
+    width: 50%;
+    z-index: 1000;
+  }
+  .app-content {
+    left: 0;
+    width: 100%;
+    background: rgba(0, 0, 0, 0.5);
+  }
+}
+@media (max-width: 576px) {
+  .app-menu {
+    width: 70%;
+  }
+}
+

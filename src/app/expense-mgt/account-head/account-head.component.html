@@ -1,0 +1,309 @@
+<div class="container">
+  <div class="row">
+    <div class="col-md-12">
+      <h4 class="text-success">
+        <b>Account Head</b>
+      </h4>
+      <hr>
+      <br>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col">
+      <button class="btn btn-success float-right mb-2" (click)="triggerAdd()" data-toggle="modal" data-target="#addAccountHeadModal">
+        <i class="fa fa-pencil-alt"></i> Add Account Head</button>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-hover table-bordered">
+        <thead>
+          <tr class="bg-info">          
+            <th>S/N</th>
+            <th>Title</th>
+            <th>Code</th>
+            <th>Description</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let account of accounts
+          | paginate: {itemsPerPage:itemsCount.value, currentPage: page};
+          index as k">
+            <td>{{ k + 1}}</td>
+            <td>{{account.Title}}</td>
+            <td>{{account.Code}}</td>
+            <td>{{account.Description}}</td>
+            <td>{{account.StatusLabel}}</td>
+            <td>
+              <span class="text-primary pointy" (click)="triggerEdit(account.AccountHeadId)" data-target="#editAccountHeadModal" data-toggle="modal">
+                <b>
+                  <i class="fa fa-edit"></i> Edit</b>
+              </span>
+              <span class="text-danger pointy" (click)="triggerDelete(account.AccountHeadId, account.Title)" data-target="#deleteAccountHeadModal"
+                data-toggle="modal">
+                <b>
+                  <i class="fa fa-trash-alt"></i> Delete</b>
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <span *ngIf="loading" class="text-info">
+        <i class="fas fa-spinner fa-pulse fa-3x"></i>
+      </span>
+    </div>
+  </div>
+
+  <!-- Pagination Controls -->
+  <div class="row">
+    <div class="col-sm-4">
+      <form role="form" class="paging-form">
+        <div class="form-group">
+          <div class="input-group">
+            <div class="input-group-prepend">
+              <div class="input-group-text">
+                Count/List
+              </div>
+            </div>
+            <select class="form-control" #itemsCount="ngModel" name="count" [(ngModel)]="paginator.num">
+              <option value="null" disabled>--Select count--</option>
+              <option *ngFor="let num of [1, 5, 10, 20, 50]" [value]=num>{{num}}</option>
+            </select>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="col-sm-8">
+      <pagination-controls (pageChange)="page = $event"></pagination-controls>
+    </div>
+  </div>
+
+</div> 
+
+
+<!-- Add  Modal -->
+<div class="modal fade" id="addAccountHeadModal" tabindex="-1" role="dialog" aria-labelledby="addAccountHeadModalLabel" aria-hidden="true">
+  <div class="modal-dialog ">
+    <div class="modal-content">
+      <div class="modal-header bg-success text-white">
+        <h4 class="modal-title" id="addExpenseCategoryModalLabel">
+          New Account Head
+        </h4>
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+          &times;
+        </button>
+      </div>
+      <div class="modal-body">
+        <div> 
+          <!-- response area -->
+          <div *ngIf="responseAlert" class="alert text-center" [class.alert-danger]="!requestPass" [class.alert-success]="requestPass" role="alert">
+            {{responseMessage}}
+          </div>
+
+          <form role="form" #account="ngForm" (ngSubmit)="onAddAccountHead(account)">
+            <div class="form-group">
+              <label for="Title">Account Head Title:</label>
+              <input type="text" id="Title" class="form-control" name="Title" placeholder="e.g Title" [(ngModel)]="addAcctHeadObj.Title"
+                #Title="ngModel" required minlength="3" maxlength="50">
+              <div class="text-danger" *ngIf="Title.invalid && (Title.touched || Title.dirty)">
+                <div *ngIf="Title?.errors.required">
+                     Title field is required
+                </div>
+                <div *ngIf="Title?.errors.minlength">
+                    Title should be {{Title?.errors.minlength.requiredLength}} characters minimum
+                </div>
+                <!-- <div *ngIf="AlertCodeTitle?.errors.pattern">
+                  Only text is allowed
+                </div> -->
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="Code"> Code </label>
+              <input type="text" id="Code" class="form-control" name="Code" placeholder="e.g Code" [(ngModel)]="addAcctHeadObj.Code"
+                #Code="ngModel" required minlength="3" maxlength="10">
+              <div class="text-danger" *ngIf="Code.invalid && Code.touched">
+                <div *ngIf="Code?.errors.required">
+                    Code field is required
+                </div>
+                <div *ngIf="Code?.errors.minlength">
+                    Code should be {{Code?.errors.minlength.requiredLength}} characters minimum
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="Description"> Description </label>
+              <textarea type="text" id="Description" class="form-control" name="Description" row="5" placeholder="e.g Description" [(ngModel)]="addAcctHeadObj.Description"
+                #Description="ngModel" required minlength="3" maxlength="100">
+                </textarea>
+              <div class="text-danger" *ngIf="Description.invalid && Description.touched">
+                <div *ngIf="Description?.errors.required">
+                    Description field is required
+                </div>
+                <div *ngIf="Description?.errors.minlength">
+                    Description should be {{Description?.errors.minlength.requiredLength}} characters minimum
+                </div>
+              </div>
+            </div>
+
+            <div class="form-check">
+              <label for="Status" class="form-check-label h6 pointy">
+                <input type="checkbox" name="Status" class="form-check-input " id="Status" #Status='ngModel' [(ngModel)]='addAcctHeadObj.Status'
+                  class=" form-check-input"> Status:
+              </label>
+            </div>
+
+
+            <button [@flipInOut]="stateA" type="submit" class="btn btn-primary float-right pointy" [disabled]="account.form.invalid">
+              <i class="fas fa-save"></i> Submit
+            </button>
+            <button [@flipInOut]="stateB" type="button" class="btn btn-secondary float-right" disabled>
+              <i class="fas fa-spinner fa-pulse"></i> Please wait
+            </button>
+            <br>
+            <br>
+          </form>
+        </div>
+      </div> 
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+<!-- Edit  Modal -->
+ <div class="modal fade" id="editAccountHeadModal" tabindex="-1" role="dialog" aria-labelledby="editAccountHeadModal" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h4 class="modal-title" id="editAccountHeadModal">
+        Edit  {{editAcctHeadObj.Title}}
+        </h4>
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+          &times;
+        </button>
+      </div>
+      <div class="modal-body">
+        <div>
+         
+          <div *ngIf="responseAlert" class="alert text-center" [class.alert-danger]="!requestPass" [class.alert-success]="requestPass" role="alert">
+            {{responseMessage}}
+          </div>
+        
+          <form role="form" #editAccount="ngForm" (ngSubmit)="onEditAccount(editAccount)">
+              <div class="row">
+                 <div class="col-md-12"> 
+                    <div class="form-group">
+                      <label for="Title">Account Head Title:</label>
+                      <input type="text" id="Title" class="form-control" name="Title" placeholder="e.g Title" [(ngModel)]="editAcctHeadObj.Title"
+                        #Title="ngModel" required minlength="3" maxlength="20">
+                      <div class="text-danger" *ngIf="Title.invalid && (Title.touched || Title.dirty)">
+                        <div *ngIf="Title?.errors.required">
+                          Account Head Title field is required
+                        </div>
+                        <div *ngIf="Title?.errors.minlength">
+                          Account Head Title should be {{Title?.errors.minlength.requiredLength}} characters minimum
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="form-group">
+                      <label for="Code"> Account Code </label>
+                      <input type="text" id="Code" class="form-control" name="Code" placeholder="e.g Code" [(ngModel)]="editAcctHeadObj.Code"
+                        #Code="ngModel" required minlength="3" maxlength="10">
+                      <div class="text-danger" *ngIf="Code.invalid && Code.touched">
+                        <div *ngIf="Code?.errors.required">
+                            Code field is required
+                        </div>
+                        <div *ngIf="Code?.errors.minlength">
+                            Code should be {{Code?.errors.minlength.requiredLength}} characters minimum
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="form-group">
+                      <label for="Description"> Description </label>
+                      <textarea type="text" id="Description" class="form-control" name="Description" row="5" placeholder="e.g Description" [(ngModel)]="editAcctHeadObj.Description"
+                        #Description="ngModel" required minlength="3" maxlength="100">
+                      </textarea>
+                      <div class="text-danger" *ngIf="Description.invalid && Description.touched">
+                        <div *ngIf="Description?.errors.required">
+                            Description field is required
+                        </div>
+                        <div *ngIf="Description?.errors.minlength">
+                            Description should be {{Description?.errors.minlength.requiredLength}} characters minimum
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="form-check">
+                      <label for="EditStatus" class="form-check-label h6 pointy">
+                        <input type="checkbox" name="Status" class="form-check-input " id="EditStatus" #Status='ngModel' [(ngModel)]="editAcctHeadObj.Status"
+                          class="form-check-input"> Status:
+                      </label>
+                    </div>
+                  </div>
+                </div> 
+
+
+            <button [@flipInOut]="stateA" type="submit" class="btn btn-dark float-right" [disabled]="editAccount.form.invalid">
+              <i class="fas fa-save"></i> Update
+            </button>
+            <button [@flipInOut]="stateB" type="button" class="btn btn-secondary float-right" disabled>
+              <i class="fas fa-spinner fa-pulse"></i> Please wait
+            </button>
+            <br>
+            <br>
+          </form>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div> 
+
+<!-- Delete  Modal -->
+ <div class="modal fade" id="deleteAccountHeadModal" tabindex="-1" role="dialog"
+      aria-labelledby="deleteAccountHeadModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-white">
+        <h4 class="modal-title" id="deleteAccountHeadModalLabel">
+         Delete {{editAcctHeadObj.Title}}
+        </h4>
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+          &times;
+        </button>
+      </div>
+      <div class="modal-body">
+        <div>
+          
+          <div *ngIf="responseAlert" class="alert text-center" [class.alert-danger]="!requestPass" [class.alert-success]="requestPass" role="alert">
+            {{responseMessage}}
+          </div>
+          <div *ngIf="successDisplay"  class="text-center">
+            <h4 class="text-secondary">
+              <b>ARE YOU SURE?</b>
+            </h4>
+              <button type="button" class="btn btn-danger" (click)="onDeleteAccountHead()">Delete</button>
+              <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+          </div>
+        </div>
+      </div>
+      <div class="mb-4"></div>
+    </div>
+  </div>
+
+

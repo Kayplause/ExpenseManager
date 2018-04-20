@@ -1,0 +1,67 @@
+<div class="bg">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-8 offset-md-2">
+        <!-- logo image -->
+        <div class="logo-div">
+          <img src="assets/images/logo.png" alt="xplug_logo" class="img-fluid" />
+        </div>
+        <!-- login form -->
+        <div class="form-div">
+          <h4><b>Hello Dev!</b></h4><hr><br>
+          <!-- response area -->
+          <div *ngIf="responseAlert" class="alert alert-danger" role="alert">
+            <span *ngIf="!requestPass">
+              {{responseMessage}}
+            </span>
+          </div>
+          <!-- user input area -->
+          <form role="form" #Login="ngForm" (ngSubmit)="onSubmit()">
+            <div class="form-group">
+              <div class="input-group">
+                <div class="input-group-prepend">
+                  <div class="input-group-text">
+                    <i class="fas fa-user-circle"></i>
+                  </div>
+                </div>
+              <input type="text" class="form-control" name="Username" placeholder="Username"
+                     [(ngModel)]="login.Username" #username="ngModel" [disabled]="working" required>
+              </div>
+              <div *ngIf="username?.errors && username?.touched">
+                <div *ngIf="username.errors.required" class="text-danger">
+                  Please enter your username
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <div class="input-group">
+                <div class="input-group-prepend">
+                  <div class="input-group-text">
+                    <i class="fas fa-unlock-alt"></i>
+                  </div>
+                </div>
+                <input type="password" class="form-control" name="Password" placeholder="Password"
+                        [(ngModel)]="login.Password" #pass="ngModel" [disabled]="working" required>
+              </div>
+              <div *ngIf="pass?.errors && pass?.touched">
+                <div *ngIf="pass.errors.required" class="text-danger">
+                  Please enter your password
+                </div>
+              </div>
+            </div>
+
+            <button [@flipInOut]="stateA" type="submit" class="btn btn-dark float-right" [disabled]="Login.form.invalid">
+              <i class="fas fa-paper-plane"></i> Let's Craft
+            </button>
+            <button [@flipInOut]="stateB" type="button" class="btn btn-secondary float-right" disabled>
+              <i class="fas fa-spinner fa-pulse"></i> Please wait
+            </button>
+            <br><br>
+          </form>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

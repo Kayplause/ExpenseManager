@@ -1,0 +1,349 @@
+<div class="container">
+
+  <div class="row">
+    <div class="col-md-12">
+      <h4 class="text-success">
+        <b>MANAGE TABS</b>
+      </h4>
+      <hr>
+      <br>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col">
+      <div *ngIf="unUpdated" class="btn-group float-left" role="group">
+        <button type="button" class="btn btn-outline-danger">
+          <i class="fas fa-hand-point-right"></i>
+        </button>
+        <button type="button" class="btn btn-danger" (click)="refreshAppTabs()">
+          Reload Tabs
+        </button>
+      </div>
+      <button type="button" class="btn btn-dark float-right" (click)="triggerAdd()"
+              data-toggle="modal" data-target="#addTabModal">
+        Add Tab
+      </button>
+      <div class="table-responsive">
+        <table class="table table-hover table-bordered">
+          <thead>
+            <tr class="bg-info">
+              <th></th>
+              <th>Title</th>
+              <th>Url</th>
+              <th>Roles</th>
+              <th>Tab Parent</th>
+              <th></th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let tab of portalTabs
+                        | paginate: {itemsPerPage:itemsCount.value, currentPage: page};
+                        index as k">
+              <td>{{ k+1 }}</td>
+              <td>{{ tab.Title}}</td>
+              <td>{{ tab.ContentUrl ? tab.ContentUrl : '-' }}</td>
+              <td>{{ tab.Roles }}</td>
+              <td>{{ tab.TabParentName }}</td>
+              <td>
+                <span class="text-primary pointy" (click)="triggerEdit(tab.TabId)"
+                      data-target="#editTabModal" data-toggle="modal">
+                  <b>Edit</b>
+                </span>
+              </td>
+              <td>
+                <span class="text-danger pointy" (click)="triggerDelete(tab.TabId)"
+                      data-target="#deleteTabModal" data-toggle="modal">
+                  <b>Delete</b>
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <span *ngIf="loading" class="text-info">
+          <i class="fas fa-spinner fa-pulse fa-3x"></i>
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pagination Controls -->
+  <div class="row">
+    <div class="col-sm-4">
+      <form role="form" class="paging-form">
+        <div class="form-group">
+          <div class="input-group">
+            <div class="input-group-prepend">
+              <div class="input-group-text">
+                Count/List
+              </div>
+            </div>
+            <select class="form-control" #itemsCount="ngModel" name="count" [(ngModel)]="paginator.num">
+              <option value="null" disabled>--Select count--</option>
+              <option *ngFor="let num of [1, 5, 10, 20, 50]" [value]=num>{{num}}</option>
+            </select>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="col-sm-8">
+      <pagination-controls (pageChange)="page = $event"></pagination-controls>
+    </div>
+  </div>
+
+</div>
+
+<!-- Add Tab Modal -->
+<div class="modal fade" id="addTabModal" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="addTabModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title" id="addTabModalLabel">
+          New Tab...
+        </h4>
+      </div>
+      <form role="form" #AddTab="ngForm" (ngSubmit)="onAddPortalTab(AddTab)">
+        <div class="modal-body">
+          <div>
+            <!-- response area -->
+            <div *ngIf="responseAlert" class="alert" [class.alert-danger]="!requestPass && !partPass"
+                  [class.alert-success]="requestPass && !partPass" [class.alert-warning]="partPass"
+                  role="alert">
+              {{responseMessage}}
+            </div>
+            <!-- user input area -->
+            <div *ngIf="!hideForm">
+              <div class="form-group">
+                <label for="tabTitle">Title</label>
+                <input type="text" id="tabTitle" class="form-control" name="Title"
+                        placeholder="e.g Membership" [(ngModel)]="portalTab.Title"
+                        #tabTitle="ngModel" [disabled]="working" required minlength="2">
+                <div *ngIf="tabTitle?.errors && tabTitle?.touched">
+                  <div *ngIf="tabTitle.errors.required" class="text-danger">
+                    Please enter tab title
+                  </div>
+                  <div *ngIf="tabTitle.errors.minlength" class="text-danger">
+                    Tab title is too short
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="tabUrl">Url</label>
+                <input type="text" id="tabUrl" class="form-control" name="ContentUrl" value=""
+                        placeholder="e.g membership-mgt" [(ngModel)]="portalTab.ContentUrl"
+                        #tabUrl="ngModel" [disabled]="working" pattern = "^[a-zA-Z-]+[a-z]$" required>
+                <div *ngIf="tabUrl?.errors && tabUrl?.touched">
+                  <div *ngIf="tabUrl.errors.required" class="text-danger">
+                    Please enter tab url
+                  </div>
+                  <div *ngIf="tabUrl.errors.pattern" class="text-danger">
+                    Tab url is invalid
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="tabParent">Tab Parent</label>
+                <select class="form-control" name="TabParentId" id="tabParent" #tabParent="ngModel"
+                        [(ngModel)]="portalTab.TabParentId" required>
+                  <option value=null disabled>--Please Select--</option>
+                  <option value=0>Self</option>
+                  <option *ngFor="let ptab of parentTabs" value={{ptab.TabId}}>{{ptab.Title}}</option>
+                </select>
+                <div *ngIf="tabParent?.errors && tabParent?.touched">
+                  <div *ngIf="tabParent.errors.required" class="text-danger">
+                    Please choose parent tab
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>Roles</label>
+                <div class="col-sm-12">
+                  <div *ngFor="let urole of portalRoles" class="form-check form-check-inline">
+                    <input type="checkbox" class="form-check-input" name="{{urole.Name}}"
+                          (click)="selectedRoles($event, urole.Name)" />
+                    <label class="form-check-label">
+                      {{urole.Name}}
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <button [@flipInOut]="stateA" type="submit" class="btn btn-dark float-right"
+                      [disabled]="AddTab.form.invalid">
+                <i class="fas fa-save"></i> Submit
+              </button>
+              <button [@flipInOut]="stateB" type="button" class="btn btn-secondary float-right" disabled>
+                <i class="fas fa-spinner fa-pulse"></i> Please wait
+              </button>
+              <br>
+              <br>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal"
+                  (click)="formReset(AddTab)" [disabled]="working">
+            Close
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Edit User Modal -->
+<div class="modal fade" id="editTabModal" tabindex="-1" role="dialog" aria-labelledby="editTabModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title" id="editTabModalLabel">
+          {{portalTab.Title}}
+        </h4>
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+          &times;
+        </button>
+      </div>
+      <div class="modal-body">
+        <div>
+          <!-- response area -->
+          <div *ngIf="responseAlert" class="alert" [class.alert-danger]="!requestPass && !partPass"
+                [class.alert-success]="requestPass && !partPass" [class.alert-warning]="partPass"
+                role="alert">
+            {{responseMessage}}
+          </div>
+          <!-- user input area -->
+          <div *ngIf="!hideForm">
+            <form role="form" #EditPortal="ngForm" (ngSubmit)="onEditPortalTab(EditPortal)">
+              <div class="form-group">
+                <label for="tabTitleE">Title</label>
+                <input type="text" id="tabTitleE" class="form-control" name="Title"
+                        placeholder="e.g Membership" [(ngModel)]="portalTab.Title"
+                        #tabTitleE="ngModel" [disabled]="working" required minlength="2">
+                <div *ngIf="tabTitleE?.errors && tabTitleE?.touched">
+                  <div *ngIf="tabTitleE.errors.required" class="text-danger">
+                    Please enter tab title
+                  </div>
+                  <div *ngIf="tabTitleE.errors.minlength" class="text-danger">
+                    Tab title is too short
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="tabUrlE">Url</label>
+                <input type="text" id="tabUrlE" class="form-control" name="ContentUrl"
+                        placeholder="e.g membership-mgt" [(ngModel)]="portalTab.ContentUrl"
+                        #tabUrlE="ngModel" [disabled]="true" pattern = "^[a-zA-Z-]+[a-z]$" required>
+                <div *ngIf="tabUrlE?.errors && tabUrlE?.touched">
+                  <div *ngIf="tabUrlE.errors.required" class="text-danger">
+                    Please enter tab url
+                  </div>
+                  <div *ngIf="tabUrlE.errors.pattern" class="text-danger">
+                    Tab url is invalid
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="tabParentE">Tab Parent</label>
+                <select class="form-control" name="TabParentId" id="tabParentE" #tabParentE="ngModel"
+                        [(ngModel)]="portalTab.TabParentId" required [disabled]="true">
+                  <option value=null disabled>--Please Select--</option>
+                  <option value=0>Self</option>
+                  <option *ngFor="let ptab of parentTabs" value={{ptab.TabId}}>{{ptab.Title}}</option>
+                </select>
+                <div *ngIf="tabParentE?.errors && tabParentE?.touched">
+                  <div *ngIf="tabParentE.errors.required" class="text-danger">
+                    Please choose parent tab
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>Roles</label>
+                <div class="form-group">
+                  <div class="col-sm-12">
+                    <div *ngFor="let urole of portalRoles" class="form-check form-check-inline">
+                      <input type="checkbox" class="form-check-input" name={{urole.Name}}
+                            (click)="selectedRoles($event, urole.Name)" #{{urole.Name}}=ngModel
+                            [ngModel]='isChecked(urole.Name)' />
+                      <label class="form-check-label">
+                        {{urole.Name}}
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <button [@flipInOut]="stateA" type="submit" class="btn btn-dark float-right"
+                      [disabled]="EditPortal.form.invalid">
+                <i class="fas fa-save"></i> Update
+              </button>
+              <button [@flipInOut]="stateB" type="button" class="btn btn-secondary float-right" disabled>
+                <i class="fas fa-spinner fa-pulse"></i> Please wait
+              </button>
+              <br>
+              <br>
+            </form>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Tab Modal -->
+<div class="modal fade" id="deleteTabModal" tabindex="-1" role="dialog" aria-labelledby="deleteTabModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title" id="deleteTabModalLabel">
+          {{portalTab.Title}}
+        </h4>
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+          &times;
+        </button>
+      </div>
+      <div class="modal-body">
+        <div>
+          <!-- response area -->
+          <div *ngIf="responseAlert" class="alert" [class.alert-danger]="!requestPass && !partPass"
+                [class.alert-success]="requestPass && !partPass" [class.alert-warning]="partPass"
+                role="alert">
+            {{responseMessage}}
+          </div>
+          <div *ngIf="deleteInit === true" class="text-center">
+            <div *ngIf="!working">
+              <h4 class="text-secondary">
+                <b>ARE YOU SURE?</b>
+              </h4>
+              <button type="button" class="btn btn-danger" (click)="onDeletePortalTab()">Delete</button>
+              <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+            </div>
+            <div *ngIf="working">
+              <span class="text-center text-secondary">
+                <i class="fas fa-spinner fa-pulse fa-4x"></i>
+              </span>
+            </div>
+          </div>
+          <div *ngIf="deleteInit === false" class="text-center">
+            <h5 class="text-secondary">
+              <b>TAB HAS BEEN SUCCESSFULLY DELETED</b>
+            </h5>
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+      <div class="mb-4"></div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,33 @@
+<div class="container">
+  <div class="row">
+    <div class="col-md-12">
+      <h1>HELLO {{generalService.activeUser.Fullname}}!</h1>
+      <br>
+      <p>
+        Welcome,
+      </p>
+      <p>
+        As a first time user, you are kindly required to change your password to access the full
+        functions which has been designed for you on this platform.
+      </p>
+      <p>
+        Once that has been successfully done, you will be logged out of the application after
+        which you can sign in again with your newly set password.
+      </p>
+      <br>
+      <p>Thank You</p>
+      <br>
+
+      <div class="btn-group" role="group">
+        <button type="button" class="btn btn-outline-success">
+          <i class="fas fa-hand-point-right"></i>
+        </button>
+        <button type="button" class="btn btn-success"
+                 routerLink="/user/change-password"
+                 routerLinkActive="active-menu">
+          Change Password Now
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

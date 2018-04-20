@@ -1,0 +1,367 @@
+<div class="container">
+
+  <div class="row">
+    <div class="col-md-12">
+      <h4 class="text-success">
+        <b>MANAGE USERS</b>
+      </h4>
+      <hr>
+      <br>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col">
+      <button type="button" class="btn btn-dark float-right" (click)="triggerAdd()"
+              data-toggle="modal" data-target="#addUserModal">
+        Add User
+      </button>
+      <div class="table-responsive">
+        <table class="table table-hover table-bordered">
+          <thead>
+            <tr class="bg-info">
+              <th></th>
+              <th>Fullname</th>
+              <th>Email</th>
+              <th>Username</th>
+              <th>DateTime Registered</th>
+              <th></th>
+              <th></th>
+              <!-- <th></th> -->
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let user of portalUsers
+                        | paginate: {itemsPerPage:itemsCount.value, currentPage: page};
+                        index as k">
+              <td>{{ k+1 }}</td>
+              <td>{{ user.Fullname}}</td>
+              <td>{{ user.Email }}</td>
+              <td>{{ user.Username }}</td>
+              <td>{{ user.DateTimeRegistered }}</td>
+              <td>
+                <button type="button" class="btn btn-warning" (click)="triggerRoleMgt(user.UserId)"
+                      data-target="#roleMgtModal" data-toggle="modal">
+                      Manage Roles
+                </button>
+              </td>
+              <td>
+                <span class="text-primary pointy" (click)="triggerEdit(user.UserId)"
+                      data-target="#editUserModal" data-toggle="modal">
+                  <b>Edit</b>
+                </span>
+              </td>
+              <!-- <td>
+                <span class="text-danger pointy" (click)="triggerDelete(user.UserId)"
+                      data-target="#deleteUserModal" data-toggle="modal">
+                  <b>Delete</b>
+                </span>
+              </td> -->
+            </tr>
+          </tbody>
+        </table>
+        <span *ngIf="loading" class="text-info">
+          <i class="fas fa-spinner fa-pulse fa-3x"></i>
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pagination Controls -->
+  <div class="row">
+    <div class="col-sm-4">
+      <form role="form" class="paging-form">
+        <div class="form-group">
+          <div class="input-group">
+            <div class="input-group-prepend">
+              <div class="input-group-text">
+                Count/List
+              </div>
+            </div>
+            <select class="form-control" #itemsCount="ngModel" name="count" [(ngModel)]="paginator.num">
+              <option value="null" disabled>--Select count--</option>
+              <option *ngFor="let num of [1, 5, 10, 20, 50]" [value]=num>{{num}}</option>
+            </select>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="col-sm-8">
+      <pagination-controls (pageChange)="page = $event"></pagination-controls>
+    </div>
+  </div>
+
+</div>
+
+<!-- Role Management Modal -->
+<div class="modal fade" id="roleMgtModal" tabindex="-1" role="dialog"
+       aria-labelledby="roleMgtModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title" id="roleMgtModalLabel">
+          Role Management
+        </h4>
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+          &times;
+        </button>
+      </div>
+      <div class="modal-body">
+        <div>
+          <!-- response area -->
+          <div *ngIf="responseAlert" class="alert" [class.alert-danger]="!requestPass"
+                [class.alert-success]="requestPass" role="alert">
+            {{responseMessage}}
+          </div>
+          <!-- user input area -->
+          <form role="form" #MgtURole="ngForm" (ngSubmit)="onAddRoleToUser()">
+            <fieldset>
+              <legend>Roles</legend>
+              <div *ngFor="let sysRole of roles" class="form-check-inline">
+                <input type="checkbox" class="form-check-input" name="sysRole.Name"
+                        [disabled]="working" [checked]="isChecked(sysRole.RoleId)"
+                        (click)="roleCheck($event, sysRole.RoleId)">
+                <label class="form-check-label">{{sysRole.Name}}</label>
+              </div>
+            </fieldset>
+
+            <button [@flipInOut]="stateA" type="submit" class="btn btn-dark float-right"
+                    [disabled]="MgtURole.form.invalid">
+              <i class="fas fa-save"></i> Submit
+            </button>
+            <button [@flipInOut]="stateB" type="button" class="btn btn-secondary float-right" disabled>
+              <i class="fas fa-spinner fa-pulse"></i> Please wait
+            </button>
+            <br>
+            <br>
+          </form>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add User Modal -->
+<div class="modal fade" id="addUserModal" tabindex="-1" role="dialog"
+       aria-labelledby="addUserModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title" id="addUserModalLabel">
+          New User...
+        </h4>
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+          &times;
+        </button>
+      </div>
+      <div class="modal-body">
+        <div>
+          <!-- response area -->
+          <div *ngIf="responseAlert" class="alert" [class.alert-danger]="!requestPass" [class.alert-success]="requestPass" role="alert">
+            {{responseMessage}}
+          </div>
+          <!-- user input area -->
+          <form role="form" #AddUser="ngForm" (ngSubmit)="onAddPortalUser(AddUser)">
+            <div class="form-group">
+              <label for="fullname">Full name</label>
+              <input type="text" id="fullname" class="form-control" name="FullName"
+                placeholder="e.g Victor Jay Joseph" [(ngModel)]="portalUser.Fullname"
+                #fullname="ngModel" [disabled]="working" required
+                pattern="^[a-zA-Z]+\s+[a-zA-Z]+$|^[a-zA-Z]+\s+[a-zA-Z]+\s+[a-zA-Z]+$">
+              <div *ngIf="fullname?.errors && fullname?.touched">
+                <div *ngIf="fullname.errors.required" class="text-danger">
+                  Please enter full name
+                </div>
+                <div *ngIf="fullname.errors.pattern" class="text-danger">
+                  Please enter a valid full name
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="username">Username</label>
+              <input type="text" id="username" class="form-control" name="Username" placeholder="e.g vickJo" [(ngModel)]="portalUser.Username"
+                #username="ngModel" [disabled]="working" required>
+              <div *ngIf="username?.errors && username?.touched">
+                <div *ngIf="username.errors.required" class="text-danger">
+                  Please enter Username
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="usermail">Email</label>
+              <input type="text" id="usermail" class="form-control" name="Email" placeholder="e.g vickjo@mail.com" [(ngModel)]="portalUser.Email"
+                #usermail="ngModel" [disabled]="working" required pattern="^([\w-\.]+@([\w-]+\.)+[\w-]{2,4})?$">
+              <div *ngIf="usermail?.errors && usermail?.touched">
+                <div *ngIf="usermail.errors.required" class="text-danger">
+                  Please enter email address
+                </div>
+                <div *ngIf="usermail.errors.pattern" class="text-danger">
+                  Please enter a valid email address
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="userpass">Password</label>
+              <div class="input-group">
+                <input type="{{inputType}}" id="userpass" class="form-control" name="Password" placeholder="*******" [(ngModel)]="portalUser.Password"
+                  #userpass="ngModel" [disabled]="working" required>
+                <div class="input-group-append pointy" (click)="viewPassword()">
+                  <div class="input-group-text">
+                    <span [class.d-none]="inputType==='text'">
+                      <i class="fas fa-eye"></i>
+                    </span>
+                    <span [class.d-none]="inputType==='password'">
+                      <i class="fas fa-eye-slash"></i>
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div *ngIf="userpass?.errors && userpass?.touched">
+                <div *ngIf="userpass.errors.required" class="text-danger">
+                  Please enter password
+                </div>
+              </div>
+            </div>
+
+            <button [@flipInOut]="stateA" type="submit" class="btn btn-dark float-right" [disabled]="AddUser.form.invalid">
+              <i class="fas fa-save"></i> Submit
+            </button>
+            <button [@flipInOut]="stateB" type="button" class="btn btn-secondary float-right" disabled>
+              <i class="fas fa-spinner fa-pulse"></i> Please wait
+            </button>
+            <br>
+            <br>
+          </form>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Edit User Modal -->
+<div class="modal fade" id="editUserModal" tabindex="-1" role="dialog"
+      aria-labelledby="editUserModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title" id="editUserModalLabel">
+          {{portalUser.Fullname}}
+        </h4>
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+          &times;
+        </button>
+      </div>
+      <div class="modal-body">
+        <div>
+          <!-- response area -->
+          <div *ngIf="responseAlert" class="alert" [class.alert-danger]="!requestPass" [class.alert-success]="requestPass" role="alert">
+            {{responseMessage}}
+          </div>
+          <!-- user input area -->
+          <form role="form" #EditUser="ngForm" (ngSubmit)="onEditPortalUser(EditUser)">
+            <div class="form-group">
+              <label for="fullname">Full name</label>
+              <input type="text" id="editFullname" class="form-control" name="FullName"
+                placeholder="e.g Victor Jay Joseph" [(ngModel)]="portalUser.Fullname"
+                #editFullname="ngModel" [disabled]="working" required
+                pattern="^[a-zA-Z]+\s+[a-zA-Z]+$|^[a-zA-Z]+\s+[a-zA-Z]+\s+[a-zA-Z]+$">
+              <div *ngIf="editFullname?.errors && editFullname?.touched">
+                <div *ngIf="editFullname.errors.required" class="text-danger">
+                  Please enter full name
+                </div>
+                <div *ngIf="editFullname.errors.pattern" class="text-danger">
+                  Please enter a valid full name
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="username">Username</label>
+              <input type="text" id="editUsername" class="form-control" name="Username" placeholder="e.g vickJo" [(ngModel)]="portalUser.Username"
+                #editUsername="ngModel" disabled required>
+              <div *ngIf="editUsername?.errors && editUsername?.touched">
+                <div *ngIf="editUsername.errors.required" class="text-danger">
+                  Please enter Username
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="usermail">Email</label>
+              <input type="text" id="editUsermail" class="form-control" name="Email" placeholder="e.g vickjo@mail.com" [(ngModel)]="portalUser.Email"
+                #editUsermail="ngModel" [disabled]="working" required pattern="^([\w-\.]+@([\w-]+\.)+[\w-]{2,4})?$">
+              <div *ngIf="editUsermail?.errors && editUsermail?.touched">
+                <div *ngIf="editUsermail.errors.required" class="text-danger">
+                  Please enter email address
+                </div>
+                <div *ngIf="editUsermail.errors.pattern" class="text-danger">
+                  Please enter a valid email address
+                </div>
+              </div>
+            </div>
+
+            <button [@flipInOut]="stateA" type="submit" class="btn btn-dark float-right" [disabled]="EditUser.form.invalid">
+              <i class="fas fa-save"></i> Update
+            </button>
+            <button [@flipInOut]="stateB" type="button" class="btn btn-secondary float-right" disabled>
+              <i class="fas fa-spinner fa-pulse"></i> Please wait
+            </button>
+            <br>
+            <br>
+          </form>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Delete User Modal -->
+<div class="modal fade" id="deleteUserModal" tabindex="-1" role="dialog"
+      aria-labelledby="deleteUserModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title" id="deleteUserModalLabel">
+          {{portalUser.Fullname}}
+        </h4>
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+          &times;
+        </button>
+      </div>
+      <div class="modal-body">
+        <div>
+          <!-- response area -->
+          <div *ngIf="responseAlert" class="alert" [class.alert-danger]="!requestPass" [class.alert-success]="requestPass" role="alert">
+            {{responseMessage}}
+          </div>
+          <div class="text-center">
+            <h4 class="text-secondary">
+              <b>ARE YOU SURE?</b>
+            </h4>
+              <button type="button" class="btn btn-danger" (click)="onDeletePortalUser()">Delete</button>
+              <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+          </div>
+        </div>
+      </div>
+      <div class="mb-4"></div>
+    </div>
+  </div>
+</div>

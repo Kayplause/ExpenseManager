@@ -1,0 +1,142 @@
+<div class="container card text-white bg-info mb-3 card-body">
+  <div class="row">
+      <div class="col-md-12">
+          <h4 class="text-success">
+              <b class="text-center">
+                  New Requisition
+              </b>
+          </h4>
+          <hr>    
+              <br></div>
+          </div>
+
+          <form role="form" #new="ngForm" (ngSubmit)="onAddNewItem(new)">
+              <div class="row">
+                  <div class="col-md-6">
+                      <div class="form-group">
+                          <label for="Title">Title:</label>
+                          <input
+                              type="text"
+                              id="Title"
+                              class="form-control"
+                              name="Title"
+                              placeholder="e.g Title"
+                              [(ngModel)]="requisitionObj.Title"
+                              #Title="ngModel"
+                              required
+                              
+                              minlength="3"
+                              maxlength="50">
+                              <div
+                                  class="text-danger"
+                                  *ngIf="Title.invalid && (Title.touched || Title.dirty)">
+                                  <div *ngIf="Title?.errors.required">
+                                      Title field is required
+                                  </div>
+                                  <div *ngIf="Title?.errors.minlength">
+                                      Title should be
+                                      {{Title?.errors.minlength.requiredLength}}
+                                      characters minimum
+                                  </div>
+
+                              </div>
+                          </div>
+                      </div>
+
+                      <div class="col-md-6">
+                          <div class="form-group">
+                              <label for="Department">Department</label>
+                              <select
+                                  class="form-control"
+                                  name="Department"
+                                  id="Department"
+                                  #Department="ngModel"
+                                  required
+                                  ngModel>
+                                  <option value=''>--Indicate Department--</option>
+                                  <option *ngFor="let dept of departments" [value]='dept.DepartmentId'>{{dept.Name}}</option>
+                              </select>
+                              <div
+                                  class="text-danger"
+                                  *ngIf="Department.invalid && (Department.touched || Department.dirty)">
+                                  <div *ngIf="Department?.errors.required">
+                                      Please Indicate Department
+                                  </div>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+
+                  <div class="row">
+                      <div class="col-md-6 mt-3">
+                          <div class="form-group">
+                              <label for="beneficiary">
+                                  Vendor
+                              </label>
+                              <select
+                                 (change)="onChangebeneficiary(beneficiary.value)"
+                                  class="form-control"
+                                  name="beneficiary"
+                                  id="beneficiary"
+                                  #beneficiary="ngModel"
+                                  
+                                  required
+                                  ngModel>
+                                  <option value=''>--Select Vendor--</option>
+                                  <option *ngFor="let ben of beneficiaries" [value]="ben.BeneficiaryId">{{ben.Fullname}}</option> 
+                              </select>
+                              <div
+                                  class="text-danger"
+                                  *ngIf="beneficiary.invalid && (beneficiary.touched || beneficiary.dirty)">
+                                  <div *ngIf="beneficiary?.errors.required">
+                                      Please Select Vendor
+                                  </div>
+                              </div>
+                          </div>
+                      </div>
+
+                      <div class="col-md-6 mt-3">
+                          <div class="form-group">
+                              <label for="BenType">Vendor Type</label>
+                              <input
+                                  class="form-control"
+                                  name="BenType"
+                                  id="BenType"
+                                  #BenType="ngModel"
+                                  [(ngModel)]="VendorType"
+                                  required
+                                  >
+                                 
+                              <div
+                                  class="text-danger"
+                                  *ngIf="BenType.invalid && (BenType.touched || BenType.dirty)">
+                                  <div *ngIf="BenType?.errors.required">
+                                      Please Select Vendor Type
+                                  </div>
+                              </div>
+                          </div>
+                      </div>
+
+                      <div class="col-md-6 mt-3">
+                          <div class="form-group">
+                              <label for="Total">Total</label>
+                              <input
+                                  class="form-control"
+                                  name="Total"
+                                  id="Total"
+                                  #Total="ngModel"
+                                  required
+                                  ngModel>
+
+                                  <div
+                                      class="text-danger"
+                                      *ngIf="Total.invalid && (Total.touched || Total.dirty)">
+                                      <div *ngIf="Total?.errors.required">
+                                          Please Select Total
+                                      </div>
+                                  </div>
+                              </div>
+                          </div>
+                      </div>
+                  </form>
+              </div>
