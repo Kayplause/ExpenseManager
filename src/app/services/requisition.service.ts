@@ -39,7 +39,7 @@ export class RequisitionService {
       );
   }
   updateRequisition(data: UpdateRequisition) {
-    const endPoint = 'ExpenseMgt/ExpenseSetting/UpdateExpenseRequisition';
+    const endPoint = 'ExpenseMgt/ExpenseTransactions/UpdateExpenseRequisition';
     const url = this.headerOptions.url + endPoint;
     const headers = this.headerOptions.headers;
 
@@ -50,7 +50,7 @@ export class RequisitionService {
       );
   }
   deleteRequisition(data: DeleteRequisition) {
-    const endPoint = 'ExpenseMgt/ExpenseSetting/DeleteExpenseRequisition';
+    const endPoint = 'ExpenseMgt/ExpenseTransactions/DeleteExpenseRequisition';
     const url = this.headerOptions.url + endPoint;
     const headers = this.headerOptions.headers;
     return this.http.post<RequisitionResponse>(url, data, { headers: headers })

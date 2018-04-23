@@ -63,3 +63,11 @@ export class ApproveRequisition {
     ) {
     }
 }
+
+export class Helpers {
+    constructor(
+        public departmentId?: number,
+        public total?: number,
+        public showButton?: boolean,
+    ) {}
+}

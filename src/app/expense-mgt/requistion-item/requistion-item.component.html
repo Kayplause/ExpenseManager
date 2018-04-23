@@ -1,358 +1,638 @@
-<div class="container card text-white bg-info mb-3 card-body">
-  <div class="row">
-    <div class="col-md-12">
-      <h4 class="text-white">
-        <b class="text-center">
-          New Requisition
-        </b>
-      </h4>
-      <hr>
-      <br>
-    </div>
-  </div>
+<ng-container *ngIf="!responseAlert">
 
-  <form role="form" #new="ngForm" >
-     
-    <div class="row">
-      <div class="col-md-6">
-        <div class="form-group">
-          <label for="Title">Title:</label>
-          <input type="text" id="Title" class="form-control" name="Title" placeholder="e.g Title" [(ngModel)]="requisitionObj.Title"
-            #Title="ngModel" required minlength="3" maxlength="50">
-          <div class="text-danger" *ngIf="Title.invalid && (Title.touched || Title.dirty)">
-            <div *ngIf="Title?.errors.required">
-              Title field is required
-            </div>
-            <div *ngIf="Title?.errors.minlength">
-              Title should be {{Title?.errors.minlength.requiredLength}} characters minimum
-            </div>
-
+    <div class="container card text-white bg-info mb-3 card-body">
+        <div class="row">
+          <div class="col-md-12">
+            <h4 class="text-white">
+              <b class="text-center">
+                New Requisition
+              </b>
+            </h4>
+            <hr>
+            <br>
           </div>
         </div>
-      </div>
-
-      <div class="col-md-6">
-        <div class="form-group">
-          <label for="Department">Department</label>
-          <select (change)="onChangeDepartment(Department.value)" class="form-control" name="Department" id="Department" #Department="ngModel" required ngModel>
-            <option value=''>--Indicate Department--</option>
-            <option *ngFor="let dept of departments" [value]='dept.DepartmentId'>{{dept.Name}}</option>
-          </select>
-          <div class="text-danger" *ngIf="Department.invalid && (Department.touched || Department.dirty)">
-            <div *ngIf="Department?.errors.required">
-              Please Indicate Department
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="row">
-      <div class="col-md-6 mt-3">
-        <div class="form-group">
-          <label for="beneficiary">
-            Vendor
-          </label>
-          <select (change)="onChangebeneficiary(beneficiary.value)" class="form-control" name="beneficiary" id="beneficiary" #beneficiary="ngModel"
-            required ngModel>
-            <option value=''>--Select Vendor--</option>
-            <option *ngFor="let ben of beneficiaries" [value]="ben.BeneficiaryId">{{ben.Fullname}}</option>
-          </select>
-          <div class="text-danger" *ngIf="beneficiary.invalid && (beneficiary.touched || beneficiary.dirty)">
-            <div *ngIf="beneficiary?.errors.required">
-              Please Select Vendor
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-md-6 mt-3">
-        <div class="form-group">
-          <label for="BenType">Vendor Type</label>
-          <input class="form-control" name="BenType" id="BenType" #BenType="ngModel" [(ngModel)]="VendorType" required>
-
-          <div class="text-danger" *ngIf="BenType.invalid && (BenType.touched || BenType.dirty)">
-            <div *ngIf="BenType?.errors.required">
-              Please Select Vendor Type
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-md-6 mt-3">
-        <div class="form-group">
-          <label for="Total">Total</label>
-          <input class="form-control" name="Total" id="Total" #Total="ngModel" required [(ngModel)]="TotalSumObj" readonly>
-
-          <div class="text-danger" *ngIf="Total.invalid && (Total.touched || Total.dirty)">
-            <div *ngIf="Total?.errors.required">
-              Please Select Total
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </form>
-</div>
-
-<div class="container">
-  <div class="row">
-    <div class="col-md-12">
-      <h4 class="text-success">
-        <b></b>
-      </h4>
-      <hr>
-      <br>
-    </div>
-   </div>
-
-  <div class="row">
-    <div class="col">
-      <button class="btn btn-success float-right mb-2" (click)="triggerAdd()" data-toggle="modal" data-target="#addRequisitionItemModal">
-        <i class="fas fa-user-plus"></i>
-        Add Requisition Item</button>
-    </div>
-
-    <div class="table-responsive">
-      <table class="table table-hover table-bordered">
-        <thead>
-          <tr class="bg-info">
-            <th>S/N</th>
-
-            <th>Description</th>
-            <th>Unit Price</th>
-            <th>Expense Item</th>
-            <th>Expense Type</th>
-            <th>Quantity</th>
-            <th>Total Amount</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let req of requisitArr
-          | paginate: {itemsPerPage:itemsCount.value, currentPage: page};
-          index as k">
-            <td>{{ k + 1}}</td>
-            <td>{{req.Description}}</td>
-            <td>{{req.UnitPrice}}</td>
-            <td>{{req.ExpenseItemId }}</td>
-            <td>{{ req.ExpenseTypeId}}</td>
-            <td>{{req.Quantity}}</td>
-            <td>{{req.TotalAmount}}</td>
-            <td>
-              <span class="text-primary pointy" (click)="triggerEdit(req.ExpenseItemId)" data-target="#editRequisitionItemModal"
-                data-toggle="modal">
-                <b>
-                  <i class="fa fa-edit"></i>
-                  Edit</b>
-              </span>
-              <span class="text-danger pointy" (click)="triggerDelete(req.ExpenseItemId)" data-target="#deleteRequisitionItemModal"
-                data-toggle="modal">
-                <b>
-                  <i class="fa fa-trash-alt"></i>
-                  Delete</b>
-              </span>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-      <!-- <span *ngIf="loading" class="text-info">
-        <i class="fas fa-spinner fa-pulse fa-3x"></i>
-      </span> -->
-    </div>
-  </div>
-
-
-  <br>
-  <br>
-  <!-- Pagination Controls -->
-  <div class="row">
-    <div class="col-sm-4">
-      <form role="form" class="paging-form">
-        <div class="form-group">
-          <div class="input-group">
-            <div class="input-group-prepend">
-              <div class="input-group-text">
-                Count/List
+      
+        <form role="form" #new="ngForm" >
+           
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="Title">Title:</label>
+                <input type="text" id="Title" class="form-control" name="Title" placeholder="e.g Title" 
+                [(ngModel)]="requisitionObj.Title"
+                  #Title="ngModel" required minlength="3" maxlength="50">
+                <div class="text-danger" *ngIf="Title.invalid && (Title.touched || Title.dirty)">
+                  <div *ngIf="Title?.errors.required">
+                    Title field is required
+                  </div>
+                  <div *ngIf="Title?.errors.minlength">
+                    Title should be {{Title?.errors.minlength.requiredLength}} characters minimum
+                  </div>
+      
+                </div>
               </div>
             </div>
-            <select class="form-control" #itemsCount="ngModel" name="count" [(ngModel)]="paginator.num">
-              <option value="null" disabled="disabled">--Select count--</option>
-              <option *ngFor="let num of [1, 5, 10, 20, 50]" [value]="num">{{num}}</option>
-            </select>
+      
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="Department">Department</label>
+                <select (change)="onChangeDepartment(Department.value)" class="form-control" name="Department" id="Department" #Department="ngModel" required ngModel>
+                  <option value=''>--Indicate Department--</option>
+                  <option *ngFor="let dept of departments" [value]='dept.DepartmentId' >{{dept.Name}}</option>
+                </select>
+                <div class="text-danger" *ngIf="Department.invalid && (Department.touched || Department.dirty)">
+                  <div *ngIf="Department?.errors.required">
+                    Please Indicate Department
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+      
+          <div class="row">
+            <div class="col-md-6 mt-3">
+              <div class="form-group">
+                <label for="beneficiary">
+                  Vendor
+                </label>
+                <select (change)="onChangebeneficiary(beneficiary.value)" class="form-control" name="beneficiary" id="beneficiary" #beneficiary="ngModel"
+                  required ngModel>
+                  <option value=''>--Select Vendor--</option>
+                  <option *ngFor="let ben of beneficiaries" [value]="ben.BeneficiaryId">{{ben.Fullname}}</option>
+                </select>
+                <div class="text-danger" *ngIf="beneficiary.invalid && (beneficiary.touched || beneficiary.dirty)">
+                  <div *ngIf="beneficiary?.errors.required">
+                    Please Select Vendor
+                  </div>
+                </div>
+              </div>
+            </div>
+      
+            <div class="col-md-6 mt-3">
+              <div class="form-group">
+                <label for="BenType">Vendor Type</label>
+                <input class="form-control" name="BenType" id="BenType" #BenType="ngModel" [(ngModel)]="VendorType" required>
+      
+                <div class="text-danger" *ngIf="BenType.invalid && (BenType.touched || BenType.dirty)">
+                  <div *ngIf="BenType?.errors.required">
+                    Please Select Vendor Type
+                  </div>
+                </div>
+              </div>
+            </div>
+      
+            <div class="col-md-6 mt-3">
+              <div class="form-group">
+                <label for="Total">Total</label>
+                <input class="form-control" name="Total" id="Total" #Total="ngModel" required 
+                [(ngModel)]="TotalSumObj" readonly>
+      
+                <div class="text-danger" *ngIf="Total.invalid && (Total.touched || Total.dirty)">
+                  <div *ngIf="Total?.errors.required">
+                    Please Select Total
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+      
+      <div class="container">
+        <div class="row">
+          <div class="col-md-12">
+            <h4 class="text-success">
+              <b></b>
+            </h4>
+            <hr>
+            <br>
+          </div>
+         </div>
+      
+        <div class="row">
+          <div class="col">
+            <button class="btn btn-success float-right mb-2" (click)="triggerAdd()" data-toggle="modal" data-target="#addRequisitionItemModal">
+              <i class="fas fa-user-plus"></i>
+              Add Requisition Item</button>
+          </div>
+      
+          <div class="table-responsive">
+            <table class="table table-hover table-bordered">
+              <thead>
+                <tr class="bg-info">
+                  <th>S/N</th>
+      
+                  <th>Description</th>
+                  <th>Unit Price</th>
+                  <th>Expense Item</th>
+                  <th>Expense Type</th>
+                  <th>Quantity</th>
+                  <th>Total Amount</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let req of requisitArr
+                | paginate: {itemsPerPage:itemsCount.value, currentPage: page};
+                index as k">
+                  <td>{{ k + 1}}</td>
+                  <td>{{req.Description}}</td>
+                  <td>{{req.UnitPrice}}</td>
+                  <td>{{req.ExpenseItemId }}</td>
+                  <td>{{ req.ExpenseTypeId}}</td>
+                  <td>{{req.Quantity}}</td>
+                  <td>{{req.TotalAmount}}</td>
+                  <td>
+                    <span class="text-primary pointy" (click)="triggerEdit(req.ExpenseItemId)" data-target="#editRequisitionItemModal"
+                      data-toggle="modal">
+                      <b>
+                        <i class="fa fa-edit"></i>
+                        Edit</b>
+                    </span>
+                    <span class="text-danger pointy" (click)="triggerDelete(req.ExpenseItemId)" data-target="#deleteRequisitionItemModal"
+                      data-toggle="modal">
+                      <b>
+                        <i class="fa fa-trash-alt"></i>
+                        Delete</b>
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <!-- <span *ngIf="loading" class="text-info">
+              <i class="fas fa-spinner fa-pulse fa-3x"></i>
+            </span> -->
           </div>
         </div>
-      </form>
-    </div>
-    <div class="col-sm-8">
-      <pagination-controls (pageChange)="page = $event"></pagination-controls>
-    </div>
-  </div>
-
-  <button [@flipInOut]="stateA" type="button" (click)="onAddRequisitionItem(new)" class="btn btn-primary float-right pointy" >
-    <i class="fas fa-save"></i>
-    Submit
-  </button>
-  <button [@flipInOut]="stateB" type="button" class="btn btn-secondary float-right" disabled="disabled">
-    <i class="fas fa-spinner fa-pulse"></i>
-    Please wait
-  </button>
-</div>
-
-<!-- Add Modal -->
-<div class="modal fade" id="addRequisitionItemModal" tabindex="-1" role="dialog" aria-labelledby="addRequisitionItemLabel"
-  aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header bg-success text-white">
-        <h4 class="modal-title" id="addRequisitionItemLabel">
-          ADD NEW ITEM 
-        </h4>
-        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
-          &times;
+      
+      
+        <br>
+        <br>
+        <!-- Pagination Controls -->
+        <div class="row">
+          <div class="col-sm-4">
+            <form role="form" class="paging-form">
+              <div class="form-group">
+                <div class="input-group">
+                  <div class="input-group-prepend">
+                    <div class="input-group-text">
+                      Count/List
+                    </div>
+                  </div>
+                  <select class="form-control" #itemsCount="ngModel" name="count" [(ngModel)]="paginator.num">
+                    <option value="null" disabled="disabled">--Select count--</option>
+                    <option *ngFor="let num of [1, 5, 10, 20, 50]" [value]="num">{{num}}</option>
+                  </select>
+                </div>
+              </div>
+            </form>
+          </div>
+          <div class="col-sm-8">
+            <pagination-controls (pageChange)="page = $event"></pagination-controls>
+          </div>
+        </div>
+      
+        <button [@flipInOut]="stateA" type="button" (click)="onAddRequisitionItem(new)" class="btn btn-primary float-right pointy" >
+          <i class="fas fa-save"></i>
+          Submit
+        </button>
+        <button [@flipInOut]="stateB" type="button" class="btn btn-secondary float-right" disabled="disabled">
+          <i class="fas fa-spinner fa-pulse"></i>
+          Please wait
         </button>
       </div>
-      <div class="modal-body">
-         
-        <div>
-          <!-- response area -->
-          <div *ngIf="responseAlert" class="alert text-center" [class.alert-danger]="!requestPass" [class.alert-success]="requestPass"
-            role="alert">
-            {{responseMessage}}
+      
+      <!-- Add Modal -->
+      <div class="modal fade" id="addRequisitionItemModal" tabindex="-1" role="dialog" aria-labelledby="addRequisitionItemLabel"
+        aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+              <h4 class="modal-title" id="addRequisitionItemLabel">
+                ADD NEW ITEM 
+              </h4>
+              <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                &times;
+              </button>
+            </div>
+            <div class="modal-body">
+               
+              <div>
+               
+      
+                <form role="form" #add="ngForm" (ngSubmit)="onAddNewItem(add)">
+                  <div class="row">
+                    <div class="col-md-6 mt-3">
+                      <div class="form-group">
+                        <label for="Expense">Expense Type</label>
+                        <select (change)="onChangeExpenseType(Expense.value)" class="form-control" name="ExpenseTypeId" id="Expense" #Expense="ngModel" required ngModel>
+                          <option value=''>--Select Expense Type--</option>
+                          <option *ngFor="let expense of expensetypes" [value]='expense.ExpenseTypeId'>{{expense.Name}}</option>
+                        </select>
+                        <div class="text-danger" *ngIf="Expense.invalid && (Expense.touched || Expense.dirty)">
+                          <div *ngIf="Expense?.errors.required">
+                            Please Select Expense Type
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+      
+                    <div class="col-md-6 mt-3">
+                      <div class="form-group">
+                        <label for="ItemExpense">Expense Item</label>
+                        <select class="form-control" name="ExpenseItemId" (change)="onChangeExpenseItem(ItemExpense.value)" id="ItemExpense" #ItemExpense="ngModel"
+                          required="required" ngModel>
+                          <option value=''>--Select Expense Item--</option>
+                          <option *ngFor="let item of expenseitems" [value]='item.ExpenseItemId'>{{item.Name}}</option>
+                        </select>
+                        <div class="text-danger" *ngIf="ItemExpense.invalid && (ItemExpense.touched || ItemExpense.dirty)">
+                          <div *ngIf="ItemExpense?.errors.required">
+                            Please Select Expense Item
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+      
+                  <div class="row">
+                    <div class="col-md-6">
+                      <div class="form-group">
+                        <label for="Quantity">
+                          Quantity
+                        </label>
+                        <input (keyup)="totalQuantity(Quantity.value)" type="text" id="Quantity" row="5" class="form-control" name="Quantity" placeholder="e.g Quantity" #Quantity="ngModel"
+                          [(ngModel)]="QuantityObj" minlength="1" maxlength="1000" ngModel required>
+      
+                        <div class="text-danger" *ngIf="Quantity.invalid && Quantity.touched">
+                          <div *ngIf="Quantity?.errors.required">
+                            Quantity field is required
+                          </div>
+                          <div *ngIf="Quantity?.errors.minlength">
+                            Quantity should be {{Quantity?.errors.minlength.requiredLength}} characters minimum
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+      
+                    <div class="col-md-6">
+                      <div class="form-group">
+                        <label for="Description">
+                          Description
+                        </label>
+                        <textarea (keyup)="describe(Description.value)"type="text" id="Description" row="5" class="form-control" name="Description" placeholder="e.g Description" #Description="ngModel"
+                          [(ngModel)]="DescribeObj" minlength="3" maxlength="500" ngModel required></textarea>
+                        <div class="text-danger" *ngIf="Description.invalid && Description.touched">
+                          <div *ngIf="Description?.errors.required">
+                            Description field is required
+                          </div>
+                          <div *ngIf="Description?.errors.minlength">
+                            Description should be {{Description?.errors.minlength.requiredLength}} characters minimum
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col">
+                      <div class="form-group">
+                        <label for="UnitPrice">
+                          UnitPrice
+                        </label>
+                        <input type="text" id="UnitPrice" class="form-control" name="UnitPrice" placeholder="e.g UnitPrice" #UnitPrice="ngModel"
+                          [(ngModel)]="PriceUnit" required minlength="3" maxlength="100" readonly="readonly">
+      
+                        <div class="text-danger" *ngIf="UnitPrice.invalid && UnitPrice.touched">
+                          <div *ngIf="UnitPrice?.errors.required">
+                            Unit Price field is required
+                          </div>
+                          <div *ngIf="UnitPrice?.errors.minlength">
+                            UnitPrice should be {{UnitPrice?.errors.minlength.requiredLength}} characters minimum
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+      
+                    <div class="col">
+                      <div class="form-group">
+                        <label for="Total">
+                          Total
+                        </label>
+                        <input type="text" id="Total" class="form-control" name="TotalAmount" placeholder="e.g Total" #Total="ngModel"
+                         [(ngModel)]="TotalAmountObj"
+                          required minlength="3" maxlength="100" readonly>
+      
+                        <div class="text-danger" *ngIf="Total.invalid && Total.touched">
+                          <div *ngIf="Total?.errors.required">
+                            Total field is required
+                          </div>
+                          <div *ngIf="Total?.errors.minlength">
+                            Total should be {{Total?.errors.minlength.requiredLength}} characters minimum
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+      
+                  </div>
+      
+                  <button [@flipInOut]="stateA" type="submit" class="btn btn-primary float-right pointy" [disabled]="add.form.invalid">
+                    <i class="fas fa-save"></i>
+                    Add
+                  </button>
+                  <button [@flipInOut]="stateB" type="button" class="btn btn-secondary float-right" disabled="disabled">
+                    <i class="fas fa-spinner fa-pulse"></i>
+                    Please wait
+                  </button>
+                  <br>
+                  <br>
+                </form>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button (click)="onClose()" type="button" class="btn btn-default" data-dismiss="modal">
+                Close
+              </button>
+            </div>
           </div>
+        </div>
+      </div>
+      
+</ng-container>
 
-          <form role="form" #new="ngForm" (ngSubmit)="onAddNewItem(new)">
-            <div class="row">
-              <div class="col-md-6 mt-3">
-                <div class="form-group">
-                  <label for="Expense">Expense Type</label>
-                  <select (change)="onChangeExpenseType(Expense.value)" class="form-control" name="ExpenseTypeId" id="Expense" #Expense="ngModel" required ngModel>
-                    <option value=''>--Select Expense Type--</option>
-                    <option *ngFor="let expense of expensetypes" [value]='expense.ExpenseTypeId'>{{expense.Name}}</option>
-                  </select>
-                  <div class="text-danger" *ngIf="Expense.invalid && (Expense.touched || Expense.dirty)">
-                    <div *ngIf="Expense?.errors.required">
-                      Please Select Expense Type
-                    </div>
+
+
+<ng-container >
+
+
+  <div class="container">
+    <div class="row">
+      <div class="col">
+         <!-- response area -->
+        <div  *ngIf="responseAlert" class="alert text-center" [class.alert-danger]="!requestPass" [class.alert-success]="requestPass"
+        role="alert">
+          {{responseMessage}} 
+        </div>
+      </div>
+    </div>
+  </div>
+
+  
+    
+    <div class="container">
+      <div class="row">
+        <div class="col-md-12">
+          <h4 class="text-success">
+            <b></b>
+          </h4>
+          <hr>
+          <br>
+        </div>
+       </div>
+    
+      <div class="row">
+        <div class="col">
+          <button class="btn btn-success float-right mb-2" (click)="triggerAdd()" data-toggle="modal" data-target="#addRequisitionItemModal">
+            <i class="fas fa-user-plus"></i>
+            Add Requisition Item</button>
+        </div>
+    
+        <div class="table-responsive">
+          <table class="table table-hover table-bordered">
+            <thead>
+              <tr class="bg-info">
+                <th>S/N</th>
+    
+                <th>Description</th>
+                <th>Unit Price</th>
+                <th>Expense Item</th>
+                <th>Expense Type</th>
+                <th>Quantity</th>
+                <th>Total Amount</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let req of requisitArr
+              | paginate: {itemsPerPage:itemsCount.value, currentPage: page};
+              index as k">
+                <td>{{ k + 1}}</td>
+                <td>{{req.Description}}</td>
+                <td>{{req.UnitPrice}}</td>
+                <td>{{req.ExpenseItemId }}</td>
+                <td>{{ req.ExpenseTypeId}}</td>
+                <td>{{req.Quantity}}</td>
+                <td>{{req.TotalAmount}}</td>
+                <td>
+                  <span class="text-primary pointy" (click)="triggerEdit(req.ExpenseItemId)" data-target="#editRequisitionItemModal"
+                    data-toggle="modal">
+                    <b>
+                      <i class="fa fa-edit"></i>
+                      Edit</b>
+                  </span>
+                  <span class="text-danger pointy" (click)="triggerDelete(req.ExpenseItemId)" data-target="#deleteRequisitionItemModal"
+                    data-toggle="modal">
+                    <b>
+                      <i class="fa fa-trash-alt"></i>
+                      Delete</b>
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <!-- <span *ngIf="loading" class="text-info">
+            <i class="fas fa-spinner fa-pulse fa-3x"></i>
+          </span> -->
+        </div>
+      </div>
+    
+    
+      <br>
+      <br>
+      <!-- Pagination Controls -->
+      <div class="row">
+        <div class="col-sm-4">
+          <form role="form" class="paging-form">
+            <div class="form-group">
+              <div class="input-group">
+                <div class="input-group-prepend">
+                  <div class="input-group-text">
+                    Count/List
                   </div>
                 </div>
-              </div>
-
-              <div class="col-md-6 mt-3">
-                <div class="form-group">
-                  <label for="ItemExpense">Expense Item</label>
-                  <select class="form-control" name="ExpenseItemId" (change)="onChangeExpenseItem(ItemExpense.value)" id="ItemExpense" #ItemExpense="ngModel"
-                    required="required" ngModel>
-                    <option value=''>--Select Expense Item--</option>
-                    <option *ngFor="let item of expenseitems" [value]='item.ExpenseItemId'>{{item.Name}}</option>
-                  </select>
-                  <div class="text-danger" *ngIf="ItemExpense.invalid && (ItemExpense.touched || ItemExpense.dirty)">
-                    <div *ngIf="ItemExpense?.errors.required">
-                      Please Select Expense Item
-                    </div>
-                  </div>
-                </div>
+                <select class="form-control" #itemsCount="ngModel" name="count" [(ngModel)]="paginator.num">
+                  <option value="null" disabled="disabled">--Select count--</option>
+                  <option *ngFor="let num of [1, 5, 10, 20, 50]" [value]="num">{{num}}</option>
+                </select>
               </div>
             </div>
-
-            <div class="row">
-              <div class="col-md-6">
-                <div class="form-group">
-                  <label for="Quantity">
-                    Quantity
-                  </label>
-                  <input (keyup)="totalQuantity(Quantity.value)" type="text" id="Quantity" row="5" class="form-control" name="Quantity" placeholder="e.g Quantity" #Quantity="ngModel"
-                    [(ngModel)]="QuantityObj" minlength="1" maxlength="1000" ngModel required>
-
-                  <div class="text-danger" *ngIf="Quantity.invalid && Quantity.touched">
-                    <div *ngIf="Quantity?.errors.required">
-                      Quantity field is required
-                    </div>
-                    <div *ngIf="Quantity?.errors.minlength">
-                      Quantity should be {{Quantity?.errors.minlength.requiredLength}} characters minimum
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="col-md-6">
-                <div class="form-group">
-                  <label for="Description">
-                    Description
-                  </label>
-                  <textarea (keyup)="describe(Description.value)"type="text" id="Description" row="5" class="form-control" name="Description" placeholder="e.g Description" #Description="ngModel"
-                    [(ngModel)]="DescribeObj" minlength="3" maxlength="500" ngModel required></textarea>
-                  <div class="text-danger" *ngIf="Description.invalid && Description.touched">
-                    <div *ngIf="Description?.errors.required">
-                      Description field is required
-                    </div>
-                    <div *ngIf="Description?.errors.minlength">
-                      Description should be {{Description?.errors.minlength.requiredLength}} characters minimum
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="row">
-              <div class="col">
-                <div class="form-group">
-                  <label for="UnitPrice">
-                    UnitPrice
-                  </label>
-                  <input type="text" id="UnitPrice" class="form-control" name="UnitPrice" placeholder="e.g UnitPrice" #UnitPrice="ngModel"
-                    [(ngModel)]="PriceUnit" required minlength="3" maxlength="100" readonly="readonly">
-
-                  <div class="text-danger" *ngIf="UnitPrice.invalid && UnitPrice.touched">
-                    <div *ngIf="UnitPrice?.errors.required">
-                      Unit Price field is required
-                    </div>
-                    <div *ngIf="UnitPrice?.errors.minlength">
-                      UnitPrice should be {{UnitPrice?.errors.minlength.requiredLength}} characters minimum
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="col">
-                <div class="form-group">
-                  <label for="Total">
-                    Total
-                  </label>
-                  <input type="text" id="Total" class="form-control" name="TotalAmount" placeholder="e.g Total" #Total="ngModel"
-                   [(ngModel)]="TotalAmountObj"
-                    required minlength="3" maxlength="100" readonly>
-
-                  <div class="text-danger" *ngIf="Total.invalid && Total.touched">
-                    <div *ngIf="Total?.errors.required">
-                      Total field is required
-                    </div>
-                    <div *ngIf="Total?.errors.minlength">
-                      Total should be {{Total?.errors.minlength.requiredLength}} characters minimum
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-            </div>
-
-            <button [@flipInOut]="stateA" type="submit" class="btn btn-primary float-right pointy" [disabled]="new.form.invalid">
-              <i class="fas fa-save"></i>
-              Add
-            </button>
-            <button [@flipInOut]="stateB" type="button" class="btn btn-secondary float-right" disabled="disabled">
-              <i class="fas fa-spinner fa-pulse"></i>
-              Please wait
-            </button>
-            <br>
-            <br>
           </form>
         </div>
+        <div class="col-sm-8">
+          <pagination-controls (pageChange)="page = $event"></pagination-controls>
+        </div>
       </div>
-      <div class="modal-footer">
-        <button (click)="onClose()" type="button" class="btn btn-default" data-dismiss="modal">
-          Close
-        </button>
+    
+      <button [@flipInOut]="stateA" type="button" (click)="onAddRequisitionItem(new)" class="btn btn-primary float-right pointy" >
+        <i class="fas fa-save"></i>
+        Submit
+      </button>
+      <button [@flipInOut]="stateB" type="button" class="btn btn-secondary float-right" disabled="disabled">
+        <i class="fas fa-spinner fa-pulse"></i>
+        Please wait
+      </button>
+    </div>
+    
+    <!-- Add Modal -->
+    <div class="modal fade" id="addRequisitionItemModal" tabindex="-1" role="dialog" aria-labelledby="addRequisitionItemLabel"
+      aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header bg-success text-white">
+            <h4 class="modal-title" id="addRequisitionItemLabel">
+              ADD NEW ITEM 
+            </h4>
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+              &times;
+            </button>
+          </div>
+          <div class="modal-body">
+             
+            <div>
+             
+    
+              <form role="form" #add="ngForm" (ngSubmit)="onAddNewItem(add)">
+                <div class="row">
+                  <div class="col-md-6 mt-3">
+                    <div class="form-group">
+                      <label for="Expense">Expense Type</label>
+                      <select (change)="onChangeExpenseType(Expense.value)" class="form-control" name="ExpenseTypeId" id="Expense" #Expense="ngModel" required ngModel>
+                        <option value=''>--Select Expense Type--</option>
+                        <option *ngFor="let expense of expensetypes" [value]='expense.ExpenseTypeId'>{{expense.Name}}</option>
+                      </select>
+                      <div class="text-danger" *ngIf="Expense.invalid && (Expense.touched || Expense.dirty)">
+                        <div *ngIf="Expense?.errors.required">
+                          Please Select Expense Type
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+    
+                  <div class="col-md-6 mt-3">
+                    <div class="form-group">
+                      <label for="ItemExpense">Expense Item</label>
+                      <select class="form-control" name="ExpenseItemId" (change)="onChangeExpenseItem(ItemExpense.value)" id="ItemExpense" #ItemExpense="ngModel"
+                        required="required" ngModel>
+                        <option value=''>--Select Expense Item--</option>
+                        <option *ngFor="let item of expenseitems" [value]='item.ExpenseItemId'>{{item.Name}}</option>
+                      </select>
+                      <div class="text-danger" *ngIf="ItemExpense.invalid && (ItemExpense.touched || ItemExpense.dirty)">
+                        <div *ngIf="ItemExpense?.errors.required">
+                          Please Select Expense Item
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+    
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label for="Quantity">
+                        Quantity
+                      </label>
+                      <input (keyup)="totalQuantity(Quantity.value)" type="text" id="Quantity" row="5" class="form-control" name="Quantity" placeholder="e.g Quantity" #Quantity="ngModel"
+                        [(ngModel)]="QuantityObj" minlength="1" maxlength="1000" ngModel required>
+    
+                      <div class="text-danger" *ngIf="Quantity.invalid && Quantity.touched">
+                        <div *ngIf="Quantity?.errors.required">
+                          Quantity field is required
+                        </div>
+                        <div *ngIf="Quantity?.errors.minlength">
+                          Quantity should be {{Quantity?.errors.minlength.requiredLength}} characters minimum
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+    
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label for="Description">
+                        Description
+                      </label>
+                      <textarea (keyup)="describe(Description.value)"type="text" id="Description" row="5" class="form-control" name="Description" placeholder="e.g Description" #Description="ngModel"
+                        [(ngModel)]="DescribeObj" minlength="3" maxlength="500" ngModel required></textarea>
+                      <div class="text-danger" *ngIf="Description.invalid && Description.touched">
+                        <div *ngIf="Description?.errors.required">
+                          Description field is required
+                        </div>
+                        <div *ngIf="Description?.errors.minlength">
+                          Description should be {{Description?.errors.minlength.requiredLength}} characters minimum
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col">
+                    <div class="form-group">
+                      <label for="UnitPrice">
+                        UnitPrice
+                      </label>
+                      <input type="text" id="UnitPrice" class="form-control" name="UnitPrice" placeholder="e.g UnitPrice" #UnitPrice="ngModel"
+                        [(ngModel)]="PriceUnit" required minlength="3" maxlength="100" readonly="readonly">
+    
+                      <div class="text-danger" *ngIf="UnitPrice.invalid && UnitPrice.touched">
+                        <div *ngIf="UnitPrice?.errors.required">
+                          Unit Price field is required
+                        </div>
+                        <div *ngIf="UnitPrice?.errors.minlength">
+                          UnitPrice should be {{UnitPrice?.errors.minlength.requiredLength}} characters minimum
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+    
+                  <div class="col">
+                    <div class="form-group">
+                      <label for="Total">
+                        Total
+                      </label>
+                      <input type="text" id="Total" class="form-control" name="TotalAmount" placeholder="e.g Total" #Total="ngModel"
+                       [(ngModel)]="TotalAmountObj"
+                        required minlength="3" maxlength="100" readonly>
+    
+                      <div class="text-danger" *ngIf="Total.invalid && Total.touched">
+                        <div *ngIf="Total?.errors.required">
+                          Total field is required
+                        </div>
+                        <div *ngIf="Total?.errors.minlength">
+                          Total should be {{Total?.errors.minlength.requiredLength}} characters minimum
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+    
+                </div>
+    
+                <button [@flipInOut]="stateA" type="submit" class="btn btn-primary float-right pointy" [disabled]="add.form.invalid">
+                  <i class="fas fa-save"></i>
+                  Add
+                </button>
+                <button [@flipInOut]="stateB" type="button" class="btn btn-secondary float-right" disabled="disabled">
+                  <i class="fas fa-spinner fa-pulse"></i>
+                  Please wait
+                </button>
+                <br>
+                <br>
+              </form>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button (click)="onClose()" type="button" class="btn btn-default" data-dismiss="modal">
+              Close
+            </button>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-</div>
+</ng-container>

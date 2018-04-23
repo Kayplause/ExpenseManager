@@ -26,6 +26,7 @@ export class ExpenseRequisitionObj {
                     public RequisitionNumber?: string,
                     public ApproverId?: number,
                     public Status?: number,
+                    public RegisteredBy?: number,
                     public StatusLabel?: string,
                     public TimeStampRegistered?: string,
                     public TimeStampApproved?: string,

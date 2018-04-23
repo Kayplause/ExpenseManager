@@ -1,5 +1,5 @@
 import { RequisitionService } from './../../services/requisition.service';
-import { ExpenseRequisitionObj } from './../../response-objects/requisition-response';
+import { ExpenseRequisitionObj, LoadRequisitionResponse } from './../../response-objects/requisition-response';
 import { BeneficiaryObj } from './../../response-objects/beneficiary-response';
 import { LoadExpenseItems } from './../../request-objects/expense-item';
 import { DepartmentObj } from './../../response-objects/department-response';
@@ -22,7 +22,7 @@ import { trigger, state, style, transition, animate } from '@angular/animations'
 import { filter, map, indexOf, toArray } from 'lodash';
 import { Observable } from 'rxjs/Observable';
 import { LoadRequisition, DeleteRequisition, UpdateRequisition,
-        ApproveRequisition,  AddRequisition, RequisitiontItem} from './../../request-objects/requisition';
+        ApproveRequisition,  AddRequisition, RequisitiontItem, Helpers} from './../../request-objects/requisition';
 import { ExpenseItemObj } from './../../response-objects/expense-item-response';
 import { NgForm } from '@angular/forms';
 import { AccountHeadService } from '../../services/account-head.service';
@@ -75,6 +75,7 @@ export class RequistionItemComponent implements OnInit {
    loaddeptObj: LoadDepartment = new LoadDepartment;
    departments: DepartmentObj[] = [];
    loadbeneficiaryObj: LoadBeneficiary = new LoadBeneficiary;
+   expenseRequisitions: ExpenseRequisitionObj[] = [];
    //  beneficiaryObj: BeneficiaryObj[] = [];
    beneficiaries: BeneficiaryObj[] = [];
    expensetypes: ExpenseTypeObject[]= [];
@@ -88,8 +89,6 @@ export class RequistionItemComponent implements OnInit {
    VendorType;
    beneficiaryId: null;
    typeId;
-  //  expenseItemId;
-  //  expenseTypeId;
    PriceUnit;
    QuantityObj;
    DescribeObj;
@@ -97,6 +96,8 @@ export class RequistionItemComponent implements OnInit {
    requisitArr: any[] = [];
    requisitArrB: any[] = [];
    TotalSumObj;
+   RegisteredBy: number;
+   helpers: Helpers = new Helpers;
   constructor( private generalService: GeneralService,
                public itemService: ExpenseItemService,
                public departmentService: DepartmentService,
@@ -119,12 +120,25 @@ export class RequistionItemComponent implements OnInit {
     this.Role = this.generalService.activeUser.Roles[0].RoleName;
     this.requisitionObj.SysPathCode = this.generalService.activeUser.AuthToken;
     const requisitVal = JSON.parse( window.localStorage.getItem('reqs'));
+    const requisitValB = JSON.parse( window.localStorage.getItem('reqsB'));
+    if (requisitValB) {
+      this.requisitArrB = requisitValB;
+      console.log(this.requisitArrB);
+    }
     if (requisitVal) {
       this.requisitArr = requisitVal;
     }
     this.onLoadRequisitionItem();
-  }
+    this.Role = this.generalService.activeUser.Roles[0].RoleName;
 
+  }
+  showAction() {
+    this.Role = this.generalService.activeUser.Roles[0].RoleName;
+    if (this.Role == 'PortalAdmin') {
+      return true;
+    }
+    return false;
+  }
   fadeOut() {
     setTimeout(() => {
       this.responseAlert = false;
@@ -253,7 +267,7 @@ export class RequistionItemComponent implements OnInit {
     }
 
     triggerAdd() {
-      this.requisitionObj.RequisitionItems = [];
+      // this.requisitionObj.RequisitionItems = [];
 
     }
 
@@ -274,6 +288,7 @@ export class RequistionItemComponent implements OnInit {
 
     onChangeDepartment(id) {
       if (id) {
+        this.helpers.departmentId = id;
         this.requisitionObj.DepartmentId = id;
       }
     }
@@ -286,7 +301,8 @@ export class RequistionItemComponent implements OnInit {
         this.requisitionItemBObj.push(this.requisitionObj);
         window.localStorage.setItem('reqsB', JSON.stringify(this.requisitionItemBObj));
         this.requisitArrB = JSON.parse(window.localStorage.getItem('reqsB'));
-        console.log(this.requisitArr);
+        // console.log(this.requisitArr);
+        // console.log(this.requisitionObj);
         form.reset();
       }
     }
@@ -296,7 +312,19 @@ export class RequistionItemComponent implements OnInit {
         return accumulator + currentValue;
       };
      const Total =  map(sumTotal, (item) => item.TotalAmount).reduce(getSum, 0);
-     this.TotalSumObj = Total;
+     this.helpers.total = Total;
+     if (Total) {
+      this.TotalSumObj = Total;
+     }
+     this.TotalSumObj = this.helpers.total;
+    }
+    onSelect() {
+      const depId = this.requisitArrB[0].DepartmentId;
+      // console.log(depId, this.helpers.departmentId);
+      if (depId == this.helpers.departmentId) {
+        return true;
+      }
+      return false;
     }
     onLoadRequisitionItem() {
       this.loadrequisitionObj.SysPathCode = this.generalService.activeUser.AuthToken;
@@ -304,6 +332,10 @@ export class RequistionItemComponent implements OnInit {
       this.requisitionService.loadRequisition(this.loadrequisitionObj)
         .subscribe(data => {
           console.log(data);
+          this.expenseRequisitions = filter(data.ExpenseRequisitions, (item) => {
+            return item.RegisteredBy !== 1;
+          });
+          console.log(this.expenseRequisitions);
         });
 
     }
@@ -311,17 +343,34 @@ export class RequistionItemComponent implements OnInit {
       // console.log(this.requisitionObj);
       this.requisitionService.addRequisition(this.requisitionObj)
       .subscribe(data => {
-        console.log(data);
-        // if (data.Status.IsSuccessful) {
-        //   // console.log(data);
-        //   // this.successHandler('Requisition was added successfully', form);
-        //   // window.localStorage.removeItem('reqs');
-        //   // this.requisitArr = [];
-        // }
-        // if (!data.Status.IsSuccessful) {
-        //   this.errorHandler(data);
-        // }
+        if (data.Status.IsSuccessful) {
+         this.helpers.showButton = true;
+          this.successHandler('Requisition was added successfully', form);
+          window.localStorage.removeItem('reqs');
+          window.localStorage.removeItem('reqsB');
+          this.requisitArr = [];
+          this.requisitArrB = [];
+          form.reset();
+          // this.VendorType = '';
+          // this.TotalSumObj = '';
+          // this.requisitionObj = null;
+        }
+        if (!data.Status.IsSuccessful) {
+          // window.localStorage.removeItem('reqs');
+          // window.localStorage.removeItem('reqsB');
+          // this.requisitArr = [];
+          // this.requisitArrB = [];
+          // this.VendorType = '';
+          // this.TotalSumObj = '';
+          // this.requisitionObj = null;
+          this.errorHandler(data);
+        }
       });
+    }
+    showActive() {
+      if (this.helpers.showButton === true) {
+        return true;
+      }
     }
     private successHandler(message: string, form?: NgForm) {
       this.stateA = 'in'; // Display the submit button while processing form
@@ -348,6 +397,7 @@ export class RequistionItemComponent implements OnInit {
         this.stateB = 'out';
         this.responseAlert = true;
         this.requestPass = false;
+        console.log(data);
         this.responseMessage = data.Status.Message.FriendlyMessage;
         this.fadeOut();
       }
