@@ -69,5 +69,8 @@ export class Helpers {
         public departmentId?: number,
         public total?: number,
         public showButton?: boolean,
+        public showRequisit?: boolean,
+        public requisitionId?: any,
+        public successDisplay?: boolean
     ) {}
 }

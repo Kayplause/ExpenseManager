@@ -1,4 +1,4 @@
-<ng-container *ngIf="!responseAlert">
+<ng-container *ngIf="helpers.showRequisit">
 
     <div class="container card text-white bg-info mb-3 card-body">
         <div class="row">
@@ -192,7 +192,10 @@
             <pagination-controls (pageChange)="page = $event"></pagination-controls>
           </div>
         </div>
-      
+        <button  type="button" (click)="hideRequisition()" class="btn btn-outline-primary  pointy" >
+            <i class="fas fa-arrow-left"></i>
+            Back
+          </button>
         <button [@flipInOut]="stateA" type="button" (click)="onAddRequisitionItem(new)" class="btn btn-primary float-right pointy" >
           <i class="fas fa-save"></i>
           Submit
@@ -360,8 +363,301 @@
 </ng-container>
 
 
+<ng-container *ngIf="!helpers.showRequisit">
+    
+      <div class="container">
+        <div class="row">
+          <div class="col-md-12">
+            <h4 class="text-success">
+              <b>Expense Requisitions</b>
+            </h4>
+           
+            <br>
+            <hr>
+          </div>
+         </div>
+        <div class="row">
+            <div class="col">
+                <!-- response area -->
+              <div  *ngIf="responseAlert" class="alert text-center" [class.alert-danger]="!requestPass" [class.alert-success]="requestPass"
+              role="alert">
+                {{responseMessage}} 
+              </div>
+            </div>
+          </div>
+      
+        <div class="row">
+          <div class="col">
+            <button class="btn btn-success float-right mb-2" (click)="addRequisition()" >
+              <i class="fas fa-user-plus"></i>
+              Add Requisition </button>
+          </div>
+      
+          <div class="table-responsive">
+            <table class="table table-hover table-bordered">
+              <thead>
+                <tr class="bg-info">
+                  <th>S/N</th>
+                  <th>Title</th>
+                  <th>Department</th>
+                  <th>Beneficiary</th>
+                  <th>ApproverStatus</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let expenseRequisition of expenseRequisitions
+                | paginate: {itemsPerPage:itemsCount.value, currentPage: page};
+                index as k">
+                  <td>{{ k + 1}}</td>
+                  <td>{{expenseRequisition.Title}}</td>
+                  <td>{{expenseRequisition.DepartmentName}}</td>
+                  <td>{{expenseRequisition.BeneficiaryName}}</td>
+                  <td>{{expenseRequisition.ApproverStatusLabel }}</td>
+                  <td>{{expenseRequisition.StatusLabel}}</td>
+                  <td>
+                      <span class="btn btn-group">
+                        <button class="btn btn-outline-secondary btn-sm text-muted pointer" data-toggle="dropdown">Show More</button>
+                        <button class="btn btn-sm btn-outline-primary dropdown-toggle dropdown-toggle-split pointer" data-toggle="dropdown" aria-haspopup="true"
+                          aria-expanded="false">
+                          <span class="sr-only">Toggle Dropdown</span>
+                        </button>
+                        <span class="dropdown-menu">
+                          <a (click)="triggerView(expenseRequisition.ExpenseRequisitionId)"  class="dropdown-item text-primary pointy" data-toggle="modal" data-target="#viewRequisitionItemModal">
+                            <i class=""></i> View More</a>
+                          <a class="dropdown-divider"></a>
+                          <a (click)="triggerEdit(expenseRequisition.ExpenseRequisitionId)" class="dropdown-item text-success pointy" data-toggle="modal" data-target="#editRequisitionItemModal">
+                            <i class="fa fa-pencil-alt"></i> Edit  </a>
+                            <a (click)="triggerDelete(expenseRequisition.ExpenseRequisitionId)" class="dropdown-item text-danger pointy" data-toggle="modal" data-target="#deleteRequisitionItemModal">
+                                <i class="fa fa-trash"></i> Delete  </a>
+                        </span>
+                      </span>
+                    </td>
+                </tr>
+              </tbody>
+            </table>
+            <span *ngIf="loading" class="text-info">
+              <i class="fas fa-spinner fa-pulse fa-3x"></i>
+            </span>
+          </div>
+        </div>
+      
+      
+        <br>
+        <br>
+        <!-- Pagination Controls -->
+        <div class="row">
+          <div class="col-sm-4">
+            <form role="form" class="paging-form">
+              <div class="form-group">
+                <div class="input-group">
+                  <div class="input-group-prepend">
+                    <div class="input-group-text">
+                      Count/List
+                    </div>
+                  </div>
+                  <select class="form-control" #itemsCount="ngModel" name="count" [(ngModel)]="paginator.num">
+                    <option value="null" disabled="disabled">--Select count--</option>
+                    <option *ngFor="let num of [1, 5, 10, 20, 50]" [value]="num">{{num}}</option>
+                  </select>
+                </div>
+              </div>
+            </form>
+          </div>
+          <div class="col-sm-8">
+            <pagination-controls (pageChange)="page = $event"></pagination-controls>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Add Modal -->
+      <div class="modal fade" id="addRequisitionItemModal" tabindex="-1" role="dialog" aria-labelledby="addRequisitionItemLabel"
+        aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+              <h4 class="modal-title" id="addRequisitionItemLabel">
+                ADD NEW ITEM 
+              </h4>
+              <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                &times;
+              </button>
+            </div>
+            <div class="modal-body">
+               
+              <div>
+               
+      
+                <form role="form" #add="ngForm" (ngSubmit)="onAddNewItem(add)">
+                  <div class="row">
+                    <div class="col-md-6 mt-3">
+                      <div class="form-group">
+                        <label for="Expense">Expense Type</label>
+                        <select (change)="onChangeExpenseType(Expense.value)" class="form-control" name="ExpenseTypeId" id="Expense" #Expense="ngModel" required ngModel>
+                          <option value=''>--Select Expense Type--</option>
+                          <option *ngFor="let expense of expensetypes" [value]='expense.ExpenseTypeId'>{{expense.Name}}</option>
+                        </select>
+                        <div class="text-danger" *ngIf="Expense.invalid && (Expense.touched || Expense.dirty)">
+                          <div *ngIf="Expense?.errors.required">
+                            Please Select Expense Type
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+      
+                    <div class="col-md-6 mt-3">
+                      <div class="form-group">
+                        <label for="ItemExpense">Expense Item</label>
+                        <select class="form-control" name="ExpenseItemId" (change)="onChangeExpenseItem(ItemExpense.value)" id="ItemExpense" #ItemExpense="ngModel"
+                          required="required" ngModel>
+                          <option value=''>--Select Expense Item--</option>
+                          <option *ngFor="let item of expenseitems" [value]='item.ExpenseItemId'>{{item.Name}}</option>
+                        </select>
+                        <div class="text-danger" *ngIf="ItemExpense.invalid && (ItemExpense.touched || ItemExpense.dirty)">
+                          <div *ngIf="ItemExpense?.errors.required">
+                            Please Select Expense Item
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+      
+                  <div class="row">
+                    <div class="col-md-6">
+                      <div class="form-group">
+                        <label for="Quantity">
+                          Quantity
+                        </label>
+                        <input (keyup)="totalQuantity(Quantity.value)" type="text" id="Quantity" row="5" class="form-control" name="Quantity" placeholder="e.g Quantity" #Quantity="ngModel"
+                          [(ngModel)]="QuantityObj" minlength="1" maxlength="1000" ngModel required>
+      
+                        <div class="text-danger" *ngIf="Quantity.invalid && Quantity.touched">
+                          <div *ngIf="Quantity?.errors.required">
+                            Quantity field is required
+                          </div>
+                          <div *ngIf="Quantity?.errors.minlength">
+                            Quantity should be {{Quantity?.errors.minlength.requiredLength}} characters minimum
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+      
+                    <div class="col-md-6">
+                      <div class="form-group">
+                        <label for="Description">
+                          Description
+                        </label>
+                        <textarea (keyup)="describe(Description.value)"type="text" id="Description" row="5" class="form-control" name="Description" placeholder="e.g Description" #Description="ngModel"
+                          [(ngModel)]="DescribeObj" minlength="3" maxlength="500" ngModel required></textarea>
+                        <div class="text-danger" *ngIf="Description.invalid && Description.touched">
+                          <div *ngIf="Description?.errors.required">
+                            Description field is required
+                          </div>
+                          <div *ngIf="Description?.errors.minlength">
+                            Description should be {{Description?.errors.minlength.requiredLength}} characters minimum
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col">
+                      <div class="form-group">
+                        <label for="UnitPrice">
+                          UnitPrice
+                        </label>
+                        <input type="text" id="UnitPrice" class="form-control" name="UnitPrice" placeholder="e.g UnitPrice" #UnitPrice="ngModel"
+                          [(ngModel)]="PriceUnit" required minlength="3" maxlength="100" readonly="readonly">
+      
+                        <div class="text-danger" *ngIf="UnitPrice.invalid && UnitPrice.touched">
+                          <div *ngIf="UnitPrice?.errors.required">
+                            Unit Price field is required
+                          </div>
+                          <div *ngIf="UnitPrice?.errors.minlength">
+                            UnitPrice should be {{UnitPrice?.errors.minlength.requiredLength}} characters minimum
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+      
+                    <div class="col">
+                      <div class="form-group">
+                        <label for="Total">
+                          Total
+                        </label>
+                        <input type="text" id="Total" class="form-control" name="TotalAmount" placeholder="e.g Total" #Total="ngModel"
+                         [(ngModel)]="TotalAmountObj"
+                          required minlength="3" maxlength="100" readonly>
+      
+                        <div class="text-danger" *ngIf="Total.invalid && Total.touched">
+                          <div *ngIf="Total?.errors.required">
+                            Total field is required
+                          </div>
+                          <div *ngIf="Total?.errors.minlength">
+                            Total should be {{Total?.errors.minlength.requiredLength}} characters minimum
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+      
+                  </div>
+      
+                  <button [@flipInOut]="stateA" type="submit" class="btn btn-primary float-right pointy" [disabled]="add.form.invalid">
+                    <i class="fas fa-save"></i>
+                    Add
+                  </button>
+                  <button [@flipInOut]="stateB" type="button" class="btn btn-secondary float-right" disabled="disabled">
+                    <i class="fas fa-spinner fa-pulse"></i>
+                    Please wait
+                  </button>
+                  <br>
+                  <br>
+                </form>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button (click)="onClose()" type="button" class="btn btn-default" data-dismiss="modal">
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+  </ng-container>
 
-<ng-container >
+
+<!-- Delete Requisition  -->
+<div class="modal fade" id="deleteRequisitionItemModal" tabindex="-1" role="dialog"
+      aria-labelledby="deleteRequisitionItemModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-white">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+          &times;
+        </button>
+      </div>
+      <div class="modal-body">
+        <div>
+          <!-- response area -->
+          <div *ngIf="responseAlert" class="alert text-center" [class.alert-danger]="!requestPass" [class.alert-success]="requestPass" role="alert">
+            {{responseMessage}}
+          </div>
+          <div *ngIf="helpers.successDisplay"  class="text-center">
+            <h4 class="text-secondary">
+              <b>ARE YOU SURE?</b>
+            </h4>
+              <button type="button" class="btn btn-danger" (click)="onDeleteRequisition()">Delete</button>
+              <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+          </div>
+        </div>
+      </div>
+      <div class="mb-4"></div>
+    </div>
+  </div>
+</div> 
+
+<ng-container *ngIf='false'>
 
 
   <div class="container">

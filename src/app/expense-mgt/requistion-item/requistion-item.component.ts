@@ -61,7 +61,7 @@ export class RequistionItemComponent implements OnInit {
    requisitionItemBObj: AddRequisition[] = [];
    loadrequisitionObj: LoadRequisition = new LoadRequisition;
    editExpenseItemObj: UpdateRequisition = new UpdateRequisition;
-   deleteExpenseItemObj: DeleteRequisition = new DeleteRequisition;
+   deleteRequisitionObj: DeleteRequisition = new DeleteRequisition;
    approveRequisitionObj: ApproveRequisition = new ApproveRequisition;
    requisitionsObj: ExpenseRequisitionObj[] = [];
   // ExpenseRequisitionObj:
@@ -108,6 +108,8 @@ export class RequistionItemComponent implements OnInit {
 
 
   ngOnInit() {
+    this.responseAlert = false;
+    this.helpers.successDisplay = true;
     this.loading = true;
     this.paginator.num = 10;
     this.loadExpenseTypes();
@@ -326,21 +328,31 @@ export class RequistionItemComponent implements OnInit {
       }
       return false;
     }
+    addRequisition() {
+      this.helpers.showRequisit = true;
+    }
+    hideRequisition() {
+      this.helpers.showRequisit = false;
+    }
+
     onLoadRequisitionItem() {
       this.loadrequisitionObj.SysPathCode = this.generalService.activeUser.AuthToken;
       this.loadrequisitionObj.status = 1;
       this.requisitionService.loadRequisition(this.loadrequisitionObj)
         .subscribe(data => {
           console.log(data);
-          this.expenseRequisitions = filter(data.ExpenseRequisitions, (item) => {
-            return item.RegisteredBy !== 1;
-          });
-          console.log(this.expenseRequisitions);
+          this.expenseRequisitions = data.ExpenseRequisitions;
+          // this.expenseRequisitions = filter(data.ExpenseRequisitions, (item) => {
+          //   return item.RegisteredBy == 1;
+          // });
+          // console.log(this.expenseRequisitions);
         });
 
     }
+    triggerView(id) {
+      
+    }
     onAddRequisitionItem(form: NgForm) {
-      // console.log(this.requisitionObj);
       this.requisitionService.addRequisition(this.requisitionObj)
       .subscribe(data => {
         if (data.Status.IsSuccessful) {
@@ -351,21 +363,43 @@ export class RequistionItemComponent implements OnInit {
           this.requisitArr = [];
           this.requisitArrB = [];
           form.reset();
-          // this.VendorType = '';
-          // this.TotalSumObj = '';
-          // this.requisitionObj = null;
+          this.helpers.showRequisit = false;
+          this.onLoadRequisitionItem();
         }
         if (!data.Status.IsSuccessful) {
-          // window.localStorage.removeItem('reqs');
-          // window.localStorage.removeItem('reqsB');
-          // this.requisitArr = [];
-          // this.requisitArrB = [];
-          // this.VendorType = '';
-          // this.TotalSumObj = '';
-          // this.requisitionObj = null;
+          window.localStorage.removeItem('reqs');
+          window.localStorage.removeItem('reqsB');
+          this.requisitArr = [];
+          this.requisitArrB = [];
+          form.reset();
+          this.helpers.showRequisit = true;
           this.errorHandler(data);
         }
       });
+    }
+    triggerDelete(id) {
+      this.helpers.requisitionId = filter(this.expenseRequisitions, (item) => item.ExpenseRequisitionId == id)[0].ExpenseRequisitionId;
+      this.message = 'Requisition was Deleted Successfully';
+      this.helpers.successDisplay = true;
+    }
+    onDeleteRequisition() {
+      this.deleteRequisitionObj.SysPathCode = this.generalService.activeUser.AuthToken;
+      this.deleteRequisitionObj.ExpenseRequisitionId = this.helpers.requisitionId;
+      this.deleteRequisitionObj.DeleteReason = '';
+      this.requisitionService.deleteRequisition(this.deleteRequisitionObj)
+        .subscribe(data => {
+          if (data.Status.IsSuccessful) {
+            this.responseAlert = true;
+            this.requestPass = true;
+            this.responseMessage = this.message;
+            this.helpers.successDisplay = false;
+            this.onLoadRequisitionItem();
+            this.fadeOut();
+          }
+          if (!data.Status.IsSuccessful) {
+            this.errorHandler(data);
+          }
+        });
     }
     showActive() {
       if (this.helpers.showButton === true) {
@@ -397,7 +431,6 @@ export class RequistionItemComponent implements OnInit {
         this.stateB = 'out';
         this.responseAlert = true;
         this.requestPass = false;
-        console.log(data);
         this.responseMessage = data.Status.Message.FriendlyMessage;
         this.fadeOut();
       }
